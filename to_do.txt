@@ -1,0 +1,22 @@
+soon:
+- add date to get_catalog
+- make get_catalog "update code" with accordance to the data (make sure this captures new beers)
+- change file and db names:
+    - get_catalog         -> update_catalog
+    - AppData             -> vnp_scraper
+    - Untappd             -> beers
+    - VinmonopoletKatalog -> catalog
+- add ("utsolgt", "uttgått"), årgang, 
+- wright requirements.txt
+- make untappd scraper
+- make a presentble website
+
+- scape Untappd info on beers
+- make list of beers not found on Untappd by code
+
+
+Future ideas:
+    - Make db of available stores
+    - make sort for chek in on untapp
+    - login / conect to untapp
+    - 

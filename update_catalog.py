@@ -1,29 +1,24 @@
 import requests
 import time
 import sqlite3
-import json
 
 API_KEY = "0803107360064be187d02eb284f7e146"
 MAX_RESULTS = 1000
 start = 0
 
-db_navn = "vinmonopolet.db"
+db_navn = "catalog.db"
 conn = sqlite3.connect(db_navn)
 cursor = conn.cursor()
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS products (
-    productId TEXT PRIMARY KEY,
-    shortName TEXT,
-    longName TEXT,
-    category TEXT,
-    volume REAL,
-    alcohol REAL,
-    price REAL,
-    raw_json TEXT
+    id INT PRIMARY KEY,
+    name TEXT,
+    date TEXT,
+    time TEXT
 )
 """)
-conn.commit()
+
 
 print(f"Starter massenedlasting av Vinmonopolet (med krasj-sikring)...")
 print("-" * 50)
@@ -80,42 +75,35 @@ while True:
     produkter_til_db = []
     for item in data:
         basic = item.get("basic", {})
-        classification = item.get("classification", {})
+        id = basic.get("productId")
+        name = basic.get("productShortName")
 
-        prices = item.get("prices", [])
-        price = prices[0].get("salesPrice") if prices else None
+        lastChanged = item.get("lastChanged", {})
+        date_str = lastChanged.get("date")
+        time_str = lastChanged.get("time")
 
-        product_id = basic.get("productId")
-        short_name = basic.get("productShortName")
-        long_name = basic.get("productLongName")
-        category = classification.get("mainProductTypeName")
-        volume = basic.get("volume")
-        alcohol = basic.get("alcoholContent")
-        raw_json = json.dumps(item)
-
-        if product_id:
+        if id:
             produkter_til_db.append(
                 (
-                    product_id,
-                    short_name,
-                    long_name,
-                    category,
-                    volume,
-                    alcohol,
-                    price,
-                    raw_json,
+                    id,
+                    name,
+                    date_str,
+                    time_str,
                 )
             )
 
     cursor.executemany(
         """
-    INSERT OR REPLACE INTO products (productId, shortName, longName, category, volume, alcohol, price, raw_json)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT OR REPLACE INTO products (id, name, date, time)
+    VALUES (?, ?, ?, ?)
     """,
         produkter_til_db,
     )
 
     conn.commit()
+
+    if antall_i_denne_bolken < MAX_RESULTS:
+        break
 
     start += MAX_RESULTS
     time.sleep(1.2)  # Ventetiden for å holde oss under maks kall pr minutt

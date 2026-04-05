@@ -1,0 +1,8 @@
+
+@apiKey = 0803107360064be187d02eb284f7e146
+@maxResults = 1
+@start = 0
+
+GET https://apis.vinmonopolet.no/products/v0/details-normal?maxResults={{maxResults}}&start={{start}}
+Ocp-Apim-Subscription-Key: {{apiKey}}
+

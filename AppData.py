@@ -106,15 +106,16 @@ def kjor_vaskemaskin_pipeline():
         )
     """)
 
-    # 2. Koble til KILDE-databasen (den du nettopp ryddet)
-    katalog_db = sqlite3.connect("VinmonopoletKatalog.db")
+    # 2. Koble til KILDE-databasen
+    katalog_db = sqlite3.connect("catalog.db")
     katalog_cursor = katalog_db.cursor()
 
-    # --- HER VAR FEILEN ---
-    # Vi endret tabellnavnet til 'products' og kolonnen til 'id' tidligere
-    # Henter 10 produkter som har ID lik eller høyere enn Rygr-ølen
-    katalog_cursor.execute("SELECT id FROM products WHERE id >= 14234502 LIMIT 10")
+    # --- NYTT: Legg til SQL-spørringen som filtrerer dataene ---
+    # Bytt ut 'date' med den kolonnen du vil sjekke, og '2023-10-25' med verdien du ser etter.
+    kriterium = "2023-10-25"
+    katalog_cursor.execute("SELECT id FROM products WHERE date = ?", (kriterium,))
 
+    # Henter ut alle ID-ene som matchet spørringen over
     ider_til_sjekk = [rad[0] for rad in katalog_cursor.fetchall()]
     katalog_db.close()
 

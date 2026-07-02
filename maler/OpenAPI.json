@@ -1,0 +1,183 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Vinmonopolet Products API",
+    "version": "v0",
+    "description": "Returns master data details on Vinmonopolet's products in basic, one lot, test and ordering ranges. Master data is updated approx 05:45 AM CET every day. Throttling as per 15. November 2019: Max 60 calls per minute. Max 4000 calls per day.",
+    "contact": {
+      "name": "Vinmonopolet API Portal",
+      "url": "https://api.vinmonopolet.no"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://apis.vinmonopolet.no",
+      "description": "Production server"
+    }
+  ],
+  "security": [
+    {
+      "SubscriptionKey": []
+    }
+  ],
+  "paths": {
+    "/products/v0/details-normal": {
+      "get": {
+        "summary": "Get details-normal",
+        "description": "Returns master data details on Vinmonopolet's products. Use parameter 'changedSince' to get only updated products.",
+        "operationId": "getProductsDetailsNormal",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "query",
+            "description": "Returns details of all products that match productId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vendorId",
+            "in": "query",
+            "description": "Returns details of all products that match vendorId",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "manufacturerId",
+            "in": "query",
+            "description": "Returns details of all products that match manufacturerId",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "wholesalerId",
+            "in": "query",
+            "description": "Returns details of all products that match wholesalerId",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "changedSince",
+            "in": "query",
+            "description": "Returns details of all products that have been updated since the supplied date - only numeric yyyy-MM-dd",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "productShortNameContains",
+            "in": "query",
+            "description": "Returns details of all products where productShortName contains the supplied string",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "description": "Limits the maximum number of products returned in each request",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Skips the supplied amount of products, ordered by productID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_DETAILS_Response"
+                },
+                "example": [
+                  {
+                    "basic": {
+                      "productId": "string",
+                      "productShortName": "string"
+                    },
+                    "lastChanged": {
+                      "date": "string",
+                      "time": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (wrong parameter values given)"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GET_DETAILS_Response": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "basic": {
+              "type": "object",
+              "properties": {
+                "productId": {
+                  "type": "string",
+                  "description": "Product ID"
+                },
+                "productShortName": {
+                  "type": "string",
+                  "description": "Product short name"
+                }
+              }
+            },
+            "lastChanged": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "description": "Date when product was last changed"
+                },
+                "time": {
+                  "type": "string",
+                  "description": "Time when product was last changed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "SubscriptionKey": {
+        "type": "apiKey",
+        "name": "Ocp-Apim-Subscription-Key",
+        "in": "header",
+        "description": "Your Vinmonopolet API key from the developer portal"
+      }
+    }
+  }
+}

@@ -6,7 +6,7 @@
 -- =========================================
 CREATE TABLE unt_breweries (
     -- Identifikatorer
-    brewery_id INTEGER PRIMARY KEY,        -- Ekstern Untappd ID for bryggeri (Nå Primary Key)
+    brewery_id INTEGER PRIMARY KEY,        -- Ekstern Untappd ID for bryggeri
 
     -- Navn
     brewery_name TEXT,                     -- Bryggerinavn

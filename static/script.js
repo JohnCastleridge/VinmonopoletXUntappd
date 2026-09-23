@@ -51,11 +51,11 @@ let sortDesc = true;
 
 // Filtrering state
 let activeFilters = {
-    country: null,
-    style: null,
-    untStyle: null,
-    brewery: null,
-    mainCategory: null
+    country: new Set(),
+    style: new Set(),
+    untStyle: new Set(),
+    brewery: new Set(),
+    mainCategory: new Set()
 };
 
 let colFilters = {}; // Per-kolonne filter states
@@ -388,11 +388,11 @@ function getFilteredAndSortedData() {
 
     let filtered = allBeers.filter(beer => {
         // Avanserte dropdowns
-        if (activeFilters.country && beer.vmp_country !== activeFilters.country) return false;
-        if (activeFilters.style && beer.vmp_style !== activeFilters.style) return false;
-        if (activeFilters.untStyle && beer.unt_style !== activeFilters.untStyle) return false;
-        if (activeFilters.brewery && beer.unt_brewery !== activeFilters.brewery) return false;
-        if (activeFilters.mainCategory && beer.vmp_main_category !== activeFilters.mainCategory) return false;
+        if (activeFilters.country.size > 0 && !activeFilters.country.has(beer.vmp_country)) return false;
+        if (activeFilters.style.size > 0 && !activeFilters.style.has(beer.vmp_style)) return false;
+        if (activeFilters.untStyle.size > 0 && !activeFilters.untStyle.has(beer.unt_style)) return false;
+        if (activeFilters.brewery.size > 0 && !activeFilters.brewery.has(beer.unt_brewery)) return false;
+        if (activeFilters.mainCategory.size > 0 && !activeFilters.mainCategory.has(beer.vmp_main_category)) return false;
         
         if (hideDiscontinued && beer.is_discontinued) return false;
         

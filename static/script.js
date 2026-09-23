@@ -485,11 +485,11 @@ function renderFilterChips() {
     };
 
     const dropdownMappings = {
-        mainCategory: { label: 'Hovedkategori', element: 'dropdownMainCategory', defaultText: 'Alle hovedkategorier' },
-        style: { label: 'VMP stil', element: 'dropdownStyle', defaultText: 'Alle stiler (VMP)' },
-        untStyle: { label: 'Untappd stil', element: 'dropdownUntStyle', defaultText: 'Alle Untappd stiler' },
-        country: { label: 'Land', element: 'dropdownCountry', defaultText: 'Alle land' },
-        brewery: { label: 'Bryggeri', element: 'dropdownBrewery', defaultText: 'Alle Untappd bryggerier' }
+        mainCategory: { label: 'Hovedkategori', element: 'dropdownMainCategory', defaultText: 'Hovedkategori' },
+        style: { label: 'Stil', element: 'dropdownStyle', defaultText: 'Stil' },
+        untStyle: { label: 'Understil', element: 'dropdownUntStyle', defaultText: 'Understil' },
+        country: { label: 'Land', element: 'dropdownCountry', defaultText: 'Land' },
+        brewery: { label: 'Bryggeri', element: 'dropdownBrewery', defaultText: 'Bryggeri' }
     };
 
     for (const key in dropdownMappings) {

@@ -94,11 +94,13 @@ CREATE TABLE unt_beers (
 -- Produsenter (VMP):
 --   - ID
 --   - Navn og land
+--   - Kobling til Untappd bryggeri
 -- =========================================
 CREATE TABLE vmp_producers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,  -- Produsent-ID
     name TEXT UNIQUE,                      -- Produsentnavn
-    country TEXT                           -- Land
+    country TEXT,                          -- Land
+    unt_brewery_id INTEGER REFERENCES unt_breweries(brewery_id) -- Kobling
 );
 
 

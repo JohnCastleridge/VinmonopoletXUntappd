@@ -3,7 +3,6 @@ soon:
 [x] make update_catalog "update code" with accordance to the data (make sure this captures new beers)
 [x] change file and db names
 [x] add ("utsolgt", "uttgått"), årgang
-[x] wright requirements.txt
 [x] make untappd scraper
 [x] make a presentable website
 [x] scape Untappd info on beers
@@ -13,4 +12,4 @@ Future ideas:
     - Make db of available stores
     - make sort for chek in on untapp
     - login / conect to untapp
-- [ ] Add descriptions to styles in the unt_styles table
+    - [ ] Add descriptions to styles in the unt_styles table

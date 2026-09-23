@@ -478,46 +478,37 @@ function renderFilterChips() {
         chip.innerHTML = `<span>${text}</span> <span class="close-icon">&times;</span>`;
         chip.addEventListener('click', () => {
             onRemove();
-            renderFilterChips();
+            renderFilterChips(); // Update chips visually
+            renderTable(); // Update table
         });
         activeFiltersContainer.appendChild(chip);
     };
 
-    // Sidebar Dropdown Filters
-    if (activeFilters.mainCategory) {
-        addChip(`Hovedkategori: ${activeFilters.mainCategory}`, () => {
-            activeFilters.mainCategory = null;
-            document.getElementById('dropdownMainCategory').querySelector('.dh-text').textContent = 'Alle hovedkategorier';
-            renderTable();
-        });
-    }
-    if (activeFilters.style) {
-        addChip(`VMP stil: ${activeFilters.style}`, () => {
-            activeFilters.style = null;
-            document.getElementById('dropdownStyle').querySelector('.dh-text').textContent = 'Alle stiler (VMP)';
-            renderTable();
-        });
-    }
-    if (activeFilters.untStyle) {
-        addChip(`Untappd stil: ${activeFilters.untStyle}`, () => {
-            activeFilters.untStyle = null;
-            document.getElementById('dropdownUntStyle').querySelector('.dh-text').textContent = 'Alle Untappd stiler';
-            renderTable();
-        });
-    }
-    if (activeFilters.country) {
-        addChip(`Land: ${activeFilters.country}`, () => {
-            activeFilters.country = null;
-            document.getElementById('dropdownCountry').querySelector('.dh-text').textContent = 'Alle land';
-            renderTable();
-        });
-    }
-    if (activeFilters.brewery) {
-        addChip(`Bryggeri: ${activeFilters.brewery}`, () => {
-            activeFilters.brewery = null;
-            document.getElementById('dropdownBrewery').querySelector('.dh-text').textContent = 'Alle Untappd bryggerier';
-            renderTable();
-        });
+    const dropdownMappings = {
+        mainCategory: { label: 'Hovedkategori', element: 'dropdownMainCategory', defaultText: 'Alle hovedkategorier' },
+        style: { label: 'VMP stil', element: 'dropdownStyle', defaultText: 'Alle stiler (VMP)' },
+        untStyle: { label: 'Untappd stil', element: 'dropdownUntStyle', defaultText: 'Alle Untappd stiler' },
+        country: { label: 'Land', element: 'dropdownCountry', defaultText: 'Alle land' },
+        brewery: { label: 'Bryggeri', element: 'dropdownBrewery', defaultText: 'Alle Untappd bryggerier' }
+    };
+
+    for (const key in dropdownMappings) {
+        if (activeFilters[key].size > 0) {
+            activeFilters[key].forEach(val => {
+                addChip(`${dropdownMappings[key].label}: ${val}`, () => {
+                    activeFilters[key].delete(val);
+                    // Oppdater dropdown header text
+                    const el = document.getElementById(dropdownMappings[key].element).querySelector('.dh-text');
+                    if (activeFilters[key].size === 0) {
+                        el.textContent = dropdownMappings[key].defaultText;
+                    } else if (activeFilters[key].size === 1) {
+                        el.textContent = [...activeFilters[key]][0];
+                    } else {
+                        el.textContent = activeFilters[key].size + ' valgt';
+                    }
+                });
+            });
+        }
     }
     
     // Column Filters

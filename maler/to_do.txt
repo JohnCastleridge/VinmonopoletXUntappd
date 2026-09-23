@@ -13,3 +13,4 @@ Future ideas:
     - Make db of available stores
     - make sort for chek in on untapp
     - login / conect to untapp
+- [ ] Add descriptions to styles in the unt_styles table

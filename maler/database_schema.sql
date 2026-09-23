@@ -66,6 +66,7 @@ CREATE TABLE unt_beers (
     -- Navn og stil
     beer_name TEXT,                        -- Ølnavn
     beer_style TEXT,                       -- Ølstilen (f.eks. "Stout - Imperial...")
+    style_id INTEGER REFERENCES unt_styles(id), -- Referanse til stil-tabellen
 
     -- Tekniske data
     beer_abv REAL,                         -- Alkoholprosent

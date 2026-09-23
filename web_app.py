@@ -30,7 +30,7 @@ def get_beers():
         pr.country as vmp_country,
         c.category_main as vmp_main_category,
         c.category_sub as vmp_style,
-        u.beer_style as unt_style,
+        us.name as unt_style,
         v.vintage,
         v.price,
         v.volume_ml,
@@ -60,6 +60,7 @@ def get_beers():
     LEFT JOIN vmp_producers pr ON v.producer_id = pr.id
     LEFT JOIN vmp_categories c ON v.category_id = c.id
     LEFT JOIN unt_beers u ON v.bid = u.bid
+    LEFT JOIN unt_styles us ON u.style_id = us.id
     LEFT JOIN unt_beer_brewery_links ubbl ON u.bid = ubbl.bid
     LEFT JOIN unt_breweries ub ON ubbl.brewery_id = ub.brewery_id
     """

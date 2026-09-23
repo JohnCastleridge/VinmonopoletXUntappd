@@ -137,6 +137,16 @@ function setupDropdown(elementId, dataField, filterKey) {
     const uniqueValues = [...new Set(allBeers.map(b => b[dataField]).filter(Boolean))].sort();
     const defaultText = headerText.textContent;
     
+    const updateHeader = () => {
+        if (activeFilters[filterKey].size === 0) {
+            headerText.textContent = defaultText;
+        } else if (activeFilters[filterKey].size === 1) {
+            headerText.textContent = [...activeFilters[filterKey]][0];
+        } else {
+            headerText.textContent = activeFilters[filterKey].size + ' valgt';
+        }
+    };
+    
     const renderList = (searchTerm = '') => {
         list.innerHTML = '';
         
@@ -144,29 +154,35 @@ function setupDropdown(elementId, dataField, filterKey) {
         const clearItem = document.createElement('div');
         clearItem.className = 'dropdown-item';
         clearItem.textContent = 'Vis alle';
-        if (!activeFilters[filterKey]) clearItem.classList.add('active');
+        if (activeFilters[filterKey].size === 0) clearItem.classList.add('active');
         clearItem.addEventListener('click', () => {
-            activeFilters[filterKey] = null;
-            headerText.textContent = defaultText;
+            activeFilters[filterKey].clear();
+            updateHeader();
             content.classList.add('hidden');
             renderTable();
+            renderFilterChips();
         });
         list.appendChild(clearItem);
         
-        // Filtrer verdiene basert på søk
-        const filteredVals = uniqueValues.filter(v => v.toLowerCase().includes(searchTerm.toLowerCase()));
-        
-        filteredVals.forEach(val => {
+        const filtered = uniqueValues.filter(v => v.toLowerCase().includes(searchTerm.toLowerCase()));
+        filtered.forEach(val => {
             const item = document.createElement('div');
             item.className = 'dropdown-item';
             item.textContent = val;
-            if (activeFilters[filterKey] === val) item.classList.add('active');
+            if (activeFilters[filterKey].has(val)) item.classList.add('active');
             
-            item.addEventListener('click', () => {
-                activeFilters[filterKey] = val;
-                headerText.textContent = val;
-                content.classList.add('hidden');
+            item.addEventListener('click', (e) => {
+                e.stopPropagation(); // Keep open for multi-select
+                if (activeFilters[filterKey].has(val)) {
+                    activeFilters[filterKey].delete(val);
+                    item.classList.remove('active');
+                } else {
+                    activeFilters[filterKey].add(val);
+                    item.classList.add('active');
+                }
+                updateHeader();
                 renderTable();
+                renderFilterChips();
             });
             list.appendChild(item);
         });
@@ -195,7 +211,6 @@ function setupDropdown(elementId, dataField, filterKey) {
         });
     }
 }
-
 function setupColumnToggles() {
     mainColumns.innerHTML = '';
     nicheColumns.innerHTML = '';

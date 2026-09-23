@@ -367,15 +367,25 @@ def match_vmp_to_untappd(vmp_id: int | str, db_path: str = DB_PATH, dry_run: boo
         import json
         awards = json.dumps(best_match.get("community_awards", []))
         
+        # Håndter style (unt_styles table)
+        beer_style_str = best_match.get("type_name")
+        style_id = None
+        if beer_style_str:
+            cur.execute("INSERT OR IGNORE INTO unt_styles (name) VALUES (?)", (beer_style_str,))
+            cur.execute("SELECT id FROM unt_styles WHERE name = ?", (beer_style_str,))
+            res = cur.fetchone()
+            style_id = res[0] if res else None
+        
         cur.execute('''
             INSERT INTO unt_beers (
-                bid, beer_name, beer_style, beer_abv, beer_ibu, beer_url, beer_label, rating_score, rating_count,
+                bid, beer_name, beer_style, style_id, beer_abv, beer_ibu, beer_url, beer_label, rating_score, rating_count,
                 is_beer, popularity, in_production, has_community_award, community_awards, index_date
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(bid) DO UPDATE SET
                 beer_name=excluded.beer_name,
                 beer_style=excluded.beer_style,
+                style_id=excluded.style_id,
                 beer_abv=excluded.beer_abv,
                 beer_ibu=excluded.beer_ibu,
                 beer_url=excluded.beer_url,
@@ -393,6 +403,7 @@ def match_vmp_to_untappd(vmp_id: int | str, db_path: str = DB_PATH, dry_run: boo
             beer_id, 
             best_match.get("beer_name"),
             best_match.get("type_name"), # Algolia kaller dette 'type_name'
+            style_id,
             best_match.get("beer_abv"),
             best_match.get("beer_ibu") or 0,
             beer_url,

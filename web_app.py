@@ -7,7 +7,10 @@ import sqlite3
 import os
 
 app = Flask(__name__, static_folder='static', static_url_path='')
-DB_PATH = "vmp_untappd_new.db"
+
+# Use absolute path for the database so it works properly on servers like PythonAnywhere
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "vmp_untappd_new.db")
 
 @app.route('/')
 def index():

@@ -2,13 +2,13 @@
 update_catalog.py – Oppdaterer vmp_all_products mot Vinmonopolet-APIet.
 
 Logikk:
-  1. Sett ALL needs_sync = 0 (frisk start)
+  1. Beholder eksisterende needs_sync flagg (slik at ufullstendige skrapinger huskes)
   2. Hent alle produkter fra VMP-APIet side for side
   3. For hvert produkt:
        - Ny  (finnes ikke i DB)         → INSERT med needs_sync = 1
        - Endret dato/tid               → UPDATE, sett needs_sync = 1
        - Ikke klassifisert (is_beer=NULL) → sett needs_sync = 1
-       - Uendret øl/ikke-øl            → sett needs_sync = 0 (allerede satt i steg 1)
+       - Uendret øl/ikke-øl            → beholder eksisterende needs_sync verdi
   4. Produkter som finnes i DB men IKKE fra APIet er fjernet fra VMP:
        → sett is_discontinued = 1 i vmp_products (hvis de er øl),
          og needs_sync = 0 (de trenger ikke ny VMP-skraping)
@@ -73,12 +73,10 @@ def update_catalog(db_path: str = DB_PATH) -> None:
     cur = conn.cursor()
 
     # -------------------------------------------------------------------
-    # STEG 1: Reset – sett alle til needs_sync = 0
+    # (Tidligere Steg 1 som nullstilte needs_sync er fjernet)
+    # Vi vil beholde eksisterende needs_sync = 1 for produkter som 
+    # vmp_scraper.py ikke har rukket å behandle enda.
     # -------------------------------------------------------------------
-    log("Steg 1: Setter needs_sync = 0 for alle eksisterende produkter...")
-    cur.execute("UPDATE vmp_all_products SET needs_sync = 0")
-    conn.commit()
-    log(f"  {cur.rowcount} rader nullstilt")
 
     # Hent eksisterende produkter inn i minnet for rask oppslag
     cur.execute(

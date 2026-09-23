@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polet x Untappd Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=8">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <h2>Explorer</h2>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>Kategori / Stil</h3>
+                
+                <!-- Main Category Dropdown -->
+                <div class="custom-dropdown" id="dropdownMainCategory" style="margin-bottom: 10px;">
+                    <div class="dropdown-header"><span class="dh-text">Alle hovedkategorier</span> <span>▼</span></div>
+                    <div class="dropdown-content hidden">
+                        <div class="dropdown-list"></div>
+                    </div>
+                </div>
+                
+                <!-- VMP Style Dropdown -->
+                <div class="custom-dropdown" id="dropdownStyle" style="margin-bottom: 10px;">
+                    <div class="dropdown-header"><span class="dh-text">Alle stiler (VMP)</span> <span>▼</span></div>
+                    <div class="dropdown-content hidden">
+                        <input type="text" class="dropdown-search" placeholder="Søk VMP stil...">
+                        <div class="dropdown-list"></div>
+                    </div>
+                </div>
+                
+                <!-- Untappd Style Dropdown -->
+                <div class="custom-dropdown" id="dropdownUntStyle">
+                    <div class="dropdown-header"><span class="dh-text">Alle Untappd stiler</span> <span>▼</span></div>
+                    <div class="dropdown-content hidden">
+                        <input type="text" class="dropdown-search" placeholder="Søk Untappd stil...">
+                        <div class="dropdown-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Filtrer i detalj</h3>
+                
+                <!-- Land Dropdown -->
+                <div class="custom-dropdown" id="dropdownCountry">
+                    <div class="dropdown-header"><span class="dh-text">Alle land</span> <span>▼</span></div>
+                    <div class="dropdown-content hidden">
+                        <input type="text" class="dropdown-search" placeholder="Søk land...">
+                        <div class="dropdown-list"></div>
+                    </div>
+                </div>
+
+                <!-- Untappd Brewery Dropdown -->
+                <div class="custom-dropdown" id="dropdownBrewery" style="margin-top: 10px;">
+                    <div class="dropdown-header"><span class="dh-text">Alle Untappd bryggerier</span> <span>▼</span></div>
+                    <div class="dropdown-content hidden">
+                        <input type="text" class="dropdown-search" placeholder="Søk bryggeri...">
+                        <div class="dropdown-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Velg Kolonner</h3>
+                <div class="column-toggles" id="mainColumns">
+                    <!-- Hovedkolonner -->
+                </div>
+                
+                <details class="advanced-details">
+                    <summary>Vis Ekstra / Niche Kolonner</summary>
+                    <div class="column-toggles" id="nicheColumns" style="margin-top: 10px;">
+                        <!-- Niche kolonner -->
+                    </div>
+                </details>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>Generelt</h3>
+                <div class="filter-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filterDiscontinued" checked>
+                        Skjul utgåtte varer (is_discontinued=0)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filterMatchedOnly" checked>
+                        Vis kun øl med Untappd-match
+                    </label>
+                    <label class="checkbox-label" style="color: #d97706;">
+                        <input type="checkbox" id="filterLowMatch">
+                        Vis kun dårlig/ingen match (≤ 50%)
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <button id="toggleSidebarBtn" class="icon-btn" title="Skjul/Vis meny">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="stats" id="statsBar">
+                    Laster inn...
+                </div>
+            </div>
+            
+            <div id="activeFiltersContainer" class="active-filters">
+                <!-- Filter-bobler legges til her dynamisk -->
+            </div>
+
+            <div class="table-container">
+                <table id="beersTable">
+                    <thead>
+                        <tr id="tableHeader">
+                            <!-- Kolonne-headere genereres her -->
+                        </tr>
+                        <tr id="tableFilters" class="table-filters">
+                            <!-- Kolonne-filtre genereres her -->
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Rader genereres her -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Beer Details -->
+    <div id="beerModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="script.js?v=8"></script>
+</body>
+</html>

@@ -24,9 +24,9 @@ from bs4 import BeautifulSoup
 # ---------------------------------------------------------------------------
 # Konfigurasjon
 # ---------------------------------------------------------------------------
-DB_PATH    = "vmp_untappd_new.db"
-BASE_URL   = "https://www.vinmonopolet.no"
-HEADERS    = {
+DB_PATH = "vmp_untappd_new.db"
+BASE_URL = "https://www.vinmonopolet.no"
+HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -49,36 +49,32 @@ def _fetch_product_json(vmp_id: int | str) -> dict | None:
     Returnerer None ved feil eller hvis produktet ikke finnes.
     """
     url = f"{BASE_URL}/p/{vmp_id}"
-
     max_retries = 3
+    resp = None
+
     for attempt in range(1, max_retries + 1):
         try:
             resp = requests.get(url, headers=HEADERS, timeout=15)
-            
-            if resp.status_code == 429:
-                wait_time = 10 * attempt
-                print(f"  [vmp_scraper] HTTP 429 for {vmp_id}. Venter {wait_time}s og prøver igjen ({attempt}/{max_retries})...")
-                time.sleep(wait_time)
-                continue
-                
-            break
-        except requests.exceptions.RequestException as exc:
+            break  # Suksess, bryt ut av løkken
+        except requests.RequestException as e:
             if attempt == max_retries:
-                print(f"  [vmp_scraper] Nettverksfeil for {vmp_id}: {exc}")
+                print(f"  [vmp_scraper] Nettverksfeil for {vmp_id}: {e}")
                 return None
             time.sleep(2)
 
-    if resp.status_code == 429:
-        print(f"  [vmp_scraper] Ga opp etter {max_retries} forsøk (HTTP 429).")
-        # Returnerer -1 for å signalisere rate limit
-        return -1
+    # (Etter try/except-løkken i _fetch_product_json)
 
-    if resp.status_code == 404:
-        print(f"  [vmp_scraper] 404 – produkt {vmp_id} finnes ikke.")
-        return None
+    if resp is None:
+        return None  # Nettverksfeil
+
+    if resp.status_code == 429:
+        return -1  # Rate limit sendes tilbake for å trigge pause
+
     if resp.status_code != 200:
-        print(f"  [vmp_scraper] HTTP {resp.status_code} for {vmp_id}.")
-        return None
+        print(
+            f"  [vmp_scraper] Feil (HTTP {resp.status_code}) for {vmp_id}. Ignorerer."
+        )
+        return None  # Alle andre feil (404, 500, osv.)
 
     resp.encoding = "utf-8"
     soup = BeautifulSoup(resp.text, "html.parser")
@@ -109,7 +105,7 @@ def _fetch_product_json(vmp_id: int | str) -> dict | None:
 def _parse_abv(traits: list) -> float | None:
     for t in traits:
         if t.get("name") == "Alkohol":
-            raw = t.get("formattedValue", "")        # f.eks. "9%"
+            raw = t.get("formattedValue", "")  # f.eks. "9%"
             match = re.search(r"[\d]+(?:[.,][\d]+)?", raw)
             if match:
                 return float(match.group(0).replace(",", "."))
@@ -173,53 +169,39 @@ def scrape_vmp_product(vmp_id: int | str, db_path: str = DB_PATH) -> bool:
 
     p = _fetch_product_json(vmp_id)
     if p == -1:
-        # Rate limit (HTTP 429) - vi vil ikke markere som utgått, bare returnere False
-        return False
-        
+        # Rate limit (HTTP 429)
+        return -1
+
     if p is None:
-        # Produktet finnes ikke / nettverksfeil – mark as discontinued
-        conn = sqlite3.connect(db_path)
-        cur = conn.cursor()
-        cur.execute(
-            "UPDATE vmp_all_products SET is_beer = 0, needs_sync = 0 "
-            "WHERE product_id_vmp = ?",
-            (int(vmp_id),),
-        )
-        cur.execute(
-            "UPDATE vmp_products SET is_discontinued = 1 WHERE product_id_vmp = ?",
-            (vmp_id,),
-        )
-        conn.commit()
-        conn.close()
         return False
 
     # -------------------------------------------------------------------
     # Trekk ut alle felt fra JSON
     # -------------------------------------------------------------------
-    name            = p.get("name")
-    status          = p.get("status", "aktiv")          # "aktiv" / "utgått"
+    name = p.get("name")
+    status = p.get("status", "aktiv")  # "aktiv" / "utgått"
     is_discontinued = 0 if status == "aktiv" else 1
 
-    main_cat     = p.get("main_category", {}).get("name")       # "Øl"
-    sub_cat      = p.get("main_sub_category", {}).get("name")   # "Klosterstil"
-    producer_name= p.get("main_producer", {}).get("name")
-    country      = p.get("main_country", {}).get("name")
-    vintage      = p.get("year") or None
+    main_cat = p.get("main_category", {}).get("name")  # "Øl"
+    sub_cat = p.get("main_sub_category", {}).get("name")  # "Klosterstil"
+    producer_name = p.get("main_producer", {}).get("name")
+    country = p.get("main_country", {}).get("name")
+    vintage = p.get("year") or None
 
-    price_val    = p.get("price", {}).get("value")
-    volume_cl    = p.get("volume", {}).get("value")             # i cl
-    volume_ml    = int(round(volume_cl * 10)) if volume_cl else None
+    price_val = p.get("price", {}).get("value")
+    volume_cl = p.get("volume", {}).get("value")  # i cl
+    volume_ml = int(round(volume_cl * 10)) if volume_cl else None
 
-    selection    = p.get("product_selection")
-    packaging    = p.get("packageType")
-    aroma        = p.get("smell")
-    taste        = p.get("taste")
-    color        = p.get("color")
-    method       = p.get("method")
-    allergens    = p.get("allergens")
+    selection = p.get("product_selection")
+    packaging = p.get("packageType")
+    aroma = p.get("smell")
+    taste = p.get("taste")
+    color = p.get("color")
+    method = p.get("method")
+    allergens = p.get("allergens")
 
-    traits       = p.get("content", {}).get("traits", [])
-    abv          = _parse_abv(traits)
+    traits = p.get("content", {}).get("traits", [])
+    abv = _parse_abv(traits)
 
     # Produktbilde – foretrekk superZoom-format
     images = p.get("images", [])
@@ -235,10 +217,10 @@ def scrape_vmp_product(vmp_id: int | str, db_path: str = DB_PATH) -> bool:
         url_image = images[0].get("url")
 
     # Relativ URL → absolutt
-    rel_url  = p.get("url", "")
-    url_vmp  = f"{BASE_URL}{rel_url}" if rel_url else f"{BASE_URL}/p/{vmp_id}"
+    rel_url = p.get("url", "")
+    url_vmp = f"{BASE_URL}{rel_url}" if rel_url else f"{BASE_URL}/p/{vmp_id}"
 
-    # Er dette et ølprodukt? (Øl, Sider, Mjød telles som "øl" i denne konteksten)
+    # Er dette et ølprodukt? (Øl, Sider, Mjød)
     is_beer = 1 if main_cat in BEER_CATEGORIES else 0
 
     # -------------------------------------------------------------------
@@ -249,6 +231,28 @@ def scrape_vmp_product(vmp_id: int | str, db_path: str = DB_PATH) -> bool:
     cur = conn.cursor()
 
     try:
+        # Hvis det IKKE er øl/sider/mjød, oppdaterer vi bare all_products og avbryter
+        if not is_beer:
+            cur.execute(
+                """
+                INSERT INTO vmp_all_products
+                    (product_id_vmp, name_raw, is_beer, needs_sync)
+                VALUES (?, ?, 0, 0)
+                ON CONFLICT(product_id_vmp) DO UPDATE SET
+                    name_raw   = excluded.name_raw,
+                    is_beer    = 0,
+                    needs_sync = 0
+                """,
+                (int(vmp_id), name),
+            )
+            conn.commit()
+            print(
+                f"  [vmp_scraper] Ignorert: {vmp_id} – {name!r} er ikke øl ({main_cat})."
+            )
+            return True
+
+        # Resten kjører KUN hvis is_beer == 1
+
         # Produsent
         producer_id = None
         if producer_name:
@@ -257,11 +261,11 @@ def scrape_vmp_product(vmp_id: int | str, db_path: str = DB_PATH) -> bool:
         # Kategori
         category_id = _upsert_category(cur, main_cat, sub_cat)
 
-        # vmp_products – upsert (INSERT OR REPLACE bevarer beer_id_unt og match_confidence)
+        # vmp_products – upsert (INSERT OR REPLACE bevarer IKKE alltid andre felter i rent REPLACE, så DO UPDATE er bra)
         cur.execute(
             """
             INSERT INTO vmp_products
-                (product_id_vmp, beer_id_unt, match_confidence,
+                (product_id_vmp, bid, match_confidence,
                  producer_id, category_id, name, vintage, price,
                  volume_ml, abv, selection, packaging, aroma, taste,
                  color, method, allergens, url_vmp, url_image,
@@ -287,11 +291,24 @@ def scrape_vmp_product(vmp_id: int | str, db_path: str = DB_PATH) -> bool:
                 is_discontinued= excluded.is_discontinued
             """,
             (
-                vmp_id, producer_id, category_id,
-                name, vintage, price_val,
-                volume_ml, abv, selection, packaging,
-                aroma, taste, color, method, allergens,
-                url_vmp, url_image, is_discontinued,
+                vmp_id,
+                producer_id,
+                category_id,
+                name,
+                vintage,
+                price_val,
+                volume_ml,
+                abv,
+                selection,
+                packaging,
+                aroma,
+                taste,
+                color,
+                method,
+                allergens,
+                url_vmp,
+                url_image,
+                is_discontinued,
             ),
         )
 
@@ -300,13 +317,13 @@ def scrape_vmp_product(vmp_id: int | str, db_path: str = DB_PATH) -> bool:
             """
             INSERT INTO vmp_all_products
                 (product_id_vmp, name_raw, is_beer, needs_sync)
-            VALUES (?, ?, ?, 0)
+            VALUES (?, ?, 1, 0)
             ON CONFLICT(product_id_vmp) DO UPDATE SET
                 name_raw   = excluded.name_raw,
-                is_beer    = excluded.is_beer,
+                is_beer    = 1,
                 needs_sync = 0
             """,
-            (int(vmp_id), name, is_beer),
+            (int(vmp_id), name),
         )
 
         conn.commit()
@@ -332,9 +349,10 @@ def scrape_vmp_product(vmp_id: int | str, db_path: str = DB_PATH) -> bool:
 if __name__ == "__main__":
     import sys
 
+    # Test med en kombinasjon av øl og vin for å se at ikke-øl filtreres
     test_ids = sys.argv[1:] if len(sys.argv) > 1 else ["3246802", "202501", "1476601"]
 
     for vid in test_ids:
         print(f"\nSkraper {vid}...")
         scrape_vmp_product(vid)
-        time.sleep(1.5)
+        time.sleep(2)

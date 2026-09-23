@@ -6,24 +6,18 @@
 -- =========================================
 CREATE TABLE unt_breweries (
     -- Identifikatorer
-    id INTEGER PRIMARY KEY AUTOINCREMENT,  -- Intern bryggeri-ID
-    brewery_id_unt INTEGER UNIQUE,         -- Ekstern Untappd ID for bryggeri
+    brewery_id INTEGER PRIMARY KEY,        -- Ekstern Untappd ID for bryggeri (Nå Primary Key)
 
-    -- Navn/land
-    name TEXT,                             -- Bryggerinavn
-    country TEXT,                          -- Land
-
-    -- Type bryggeri
-    brewery_type TEXT,                     -- 'Brewery', 'Cidery', 'Meadery', 'Contract', ...
-
-    -- Ratingdata
-    rating_score REAL,                     -- Gjennomsnittlig rating
-    rating_count INTEGER,                  -- Antall ratinger
+    -- Navn
+    brewery_name TEXT,                     -- Bryggerinavn
+    brewery_url TEXT,                      -- URL til bryggeriside på Untappd
 
     -- Lenker
-    url_unt TEXT,                          -- URL til bryggeriside på Untappd
-    url_website TEXT,                      -- Bryggeriets egen nettside
-    url_image TEXT                         -- Bilde/logo-URL
+    brewery_label TEXT,                    -- Bilde/logo-URL
+    
+    -- Lokasjon
+    lat REAL,                              -- GPS Breddegrad
+    lng REAL                               -- GPS Lengdegrad
 );
 
 
@@ -31,20 +25,16 @@ CREATE TABLE unt_breweries (
 -- Kobling øl ↔ bryggerier (UNT):
 --   - Hvilket øl (Untappd)
 --   - Hvilket bryggeri
---   - Rolle
 -- =========================================
 CREATE TABLE unt_beer_brewery_links (
     -- Nøkler mot øl og bryggeri
-    beer_id_unt INTEGER,                   -- Referanse til unt_beers.beer_id_unt
-    brewery_id INTEGER,                    -- Referanse til unt_breweries.id
+    bid INTEGER,                           -- Referanse til unt_beers.bid
+    brewery_id INTEGER,                    -- Referanse til unt_breweries.brewery_id
 
-    -- Rolle
-    role TEXT,                             -- 'primary', 'collab', 'contract', ...
+    PRIMARY KEY (bid, brewery_id),
 
-    PRIMARY KEY (beer_id_unt, brewery_id, role),
-
-    FOREIGN KEY (beer_id_unt) REFERENCES unt_beers(beer_id_unt),
-    FOREIGN KEY (brewery_id) REFERENCES unt_breweries(id)
+    FOREIGN KEY (bid) REFERENCES unt_beers(bid),
+    FOREIGN KEY (brewery_id) REFERENCES unt_breweries(brewery_id)
 );
 
 
@@ -71,31 +61,32 @@ CREATE TABLE unt_styles (
 -- =========================================
 CREATE TABLE unt_beers (
     -- Identifikatorer og stil
-    beer_id_unt INTEGER PRIMARY KEY,       -- Ekstern Untappd ID for øl
-    style_id INTEGER,                      -- Referanse til unt_styles.id
+    bid INTEGER PRIMARY KEY,               -- Ekstern Untappd ID for øl (Nå Primary Key)
 
-    -- Navn og beskrivelse
-    name TEXT,                             -- Ølnavn
-    description TEXT,                      -- Beskrivelse / smaksnotat
+    -- Navn og stil
+    beer_name TEXT,                        -- Ølnavn
+    beer_style TEXT,                       -- Ølstilen (f.eks. "Stout - Imperial...")
 
     -- Tekniske data
-    abv REAL,                              -- Alkoholprosent
-    ibu INTEGER,                           -- Bitterhet (IBU)
+    beer_abv REAL,                         -- Alkoholprosent
+    beer_ibu INTEGER,                      -- Bitterhet (IBU)
+    is_beer INTEGER,                       -- 1 hvis det er øl, 0 hvis sider/mjød etc
 
-    -- Ratingdata
-    rating_score REAL,                     -- Rating
-    rating_score_weighted REAL,            -- Vektet rating
+    -- Rating og Metadata
+    rating_score REAL,                     -- Ølets gjennomsnittlige rating
     rating_count INTEGER,                  -- Antall ratinger
+    popularity INTEGER,                    -- Untappds popularitetsscore
+    in_production INTEGER,                 -- 1 hvis ølet fortsatt brygges, 0 hvis utgått
+    has_community_award INTEGER,           -- 1 hvis ølet har vunnet priser på Untappd
+    community_awards TEXT,                 -- JSON-liste over priser
+    index_date TEXT,                       -- Dato ølet sist ble oppdatert på Untappd
 
-    -- Lenker
-    url_unt TEXT,                          -- URL til ølside på Untappd
-    url_website TEXT,                      -- Ølets/seriens egen nettside
-    url_image TEXT,                        -- Bilde-URL for ølet
+    -- Lenker og URL
+    beer_url TEXT,                         -- Full URL til ølet på Untappd
+    beer_label TEXT,                       -- URL til miniatyrbilde for øletikett
 
     -- Sist synk mot Untappd
-    last_synced_unt TEXT DEFAULT (CURRENT_TIMESTAMP),
-
-    FOREIGN KEY (style_id) REFERENCES unt_styles(id)
+    last_synced_unt TEXT DEFAULT (CURRENT_TIMESTAMP)
 );
 
 
@@ -136,7 +127,7 @@ CREATE TABLE vmp_categories (
 CREATE TABLE vmp_products (
     -- ID og kobling til Untappd
     product_id_vmp TEXT PRIMARY KEY,       -- VMP-produktnummer
-    beer_id_unt INTEGER,                   -- Referanse til unt_beers.beer_id_unt
+    bid INTEGER,                           -- Referanse til unt_beers.bid
     match_confidence REAL,                 -- Match-score VMP ↔ Untappd
 
     -- Produsent og kategori
@@ -168,7 +159,7 @@ CREATE TABLE vmp_products (
     -- Status
     is_discontinued INTEGER DEFAULT 0,     -- 0 = aktiv, 1 = utgått
 
-    FOREIGN KEY (beer_id_unt) REFERENCES unt_beers(beer_id_unt),
+    FOREIGN KEY (bid) REFERENCES unt_beers(bid),
     FOREIGN KEY (producer_id) REFERENCES vmp_producers(id),
     FOREIGN KEY (category_id) REFERENCES vmp_categories(id)
 );
@@ -199,7 +190,6 @@ CREATE TABLE vmp_all_products (
 -- =========================================
 -- Indekser (VMP og UNT):
 --   - Pris
---   - Rating
 --   - Kobling Untappd ↔ VMP
 --   - Match-score
 -- =========================================
@@ -207,11 +197,8 @@ CREATE TABLE vmp_all_products (
 CREATE INDEX idx_vmp_price
     ON vmp_products(price);
 
-CREATE INDEX idx_unt_rating_weighted
-    ON unt_beers(rating_score_weighted);
-
 CREATE INDEX idx_vmp_unt_beer_fk
-    ON vmp_products(beer_id_unt);
+    ON vmp_products(bid);
 
 CREATE INDEX idx_vmp_match_confidence
     ON vmp_products(match_confidence);

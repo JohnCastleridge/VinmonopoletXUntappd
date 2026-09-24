@@ -46,10 +46,10 @@ const COLUMNS = [
     { id: 'color', title: 'Farge (VMP)', type: 'text', visible: false, niche: true, width: '150px', render: (row) => row.color || '-' },
     { id: 'method', title: 'Metode (VMP)', type: 'text', visible: false, niche: true, width: '200px', render: (row) => row.method || '-' },
     { id: 'allergens', title: 'Allergener', type: 'text', visible: false, niche: true, width: '150px', render: (row) => row.allergens || '-' },
-    { id: 'is_discontinued', title: 'Utgått (VMP)', type: 'none', visible: false, niche: true, width: '100px', render: (row) => row.is_discontinued ? 'Ja' : 'Nei' },
+    { id: 'is_discontinued', title: 'Utgått (VMP)', type: 'boolean', visible: false, niche: true, width: '100px', render: (row) => row.is_discontinued ? 'Ja' : 'Nei' },
     
-    { id: 'in_production', title: 'I Produksjon (Untappd)', type: 'none', visible: false, niche: true, width: '160px', render: (row) => row.in_production === null ? '-' : (row.in_production ? 'Ja' : 'Nei') },
-    { id: 'has_community_award', title: 'På Untappd Toppliste', type: 'none', visible: false, niche: false, width: '160px', render: (row) => row.has_community_award ? 'Ja' : 'Nei' },
+    { id: 'in_production', title: 'I Produksjon (Untappd)', type: 'boolean', visible: false, niche: true, width: '160px', render: (row) => row.in_production === null ? '-' : (row.in_production ? 'Ja' : 'Nei') },
+    { id: 'has_community_award', title: 'På Untappd Toppliste', type: 'boolean', visible: false, niche: false, width: '160px', render: (row) => row.has_community_award ? 'Ja' : 'Nei' },
     { id: 'popularity', title: 'Popularitetsscore', type: 'number', visible: false, niche: true, width: '130px', render: (row) => row.popularity ? row.popularity.toLocaleString() : '-' },
     { id: 'unt_style_description', title: 'Stilbeskrivelse', type: 'text', visible: false, niche: true, width: '250px', render: (row) => row.unt_style_description || '-' },
     
@@ -65,12 +65,12 @@ const COLUMNS = [
     { id: 'unt_style_id', title: 'Untappd Stil ID', type: 'text', visible: false, niche: true, width: '120px', render: (row) => row.unt_style_id || '-' },
     { id: 'unt_brewery_id', title: 'Untappd Bryggeri ID', type: 'text', visible: false, niche: true, width: '140px', render: (row) => row.unt_brewery_id || '-' },
     
-    { id: 'url_vmp', title: 'VMP URL (Rå)', type: 'text', visible: false, niche: true, width: '200px', render: (row) => row.url_vmp ? `<a href="${row.url_vmp}" target="_blank">Lenke</a>` : '-' },
-    { id: 'url_unt', title: 'Untappd URL (Rå)', type: 'text', visible: false, niche: true, width: '200px', render: (row) => row.url_unt ? `<a href="${row.url_unt}" target="_blank">Lenke</a>` : '-' },
-    { id: 'vmp_image', title: 'VMP Bilde URL', type: 'text', visible: false, niche: true, width: '200px', render: (row) => row.vmp_image || '-' },
-    { id: 'url_image', title: 'Untappd Bilde URL', type: 'text', visible: false, niche: true, width: '200px', render: (row) => row.url_image || '-' },
-    { id: 'brewery_url', title: 'Bryggeri URL', type: 'text', visible: false, niche: true, width: '200px', render: (row) => row.brewery_url ? `<a href="${row.brewery_url}" target="_blank">Lenke</a>` : '-' },
-    { id: 'brewery_label', title: 'Bryggeri Logo URL', type: 'text', visible: false, niche: true, width: '200px', render: (row) => row.brewery_label || '-' }
+    { id: 'url_vmp', title: 'VMP URL (Rå)', type: 'text', visible: false, niche: true, width: '100px', render: (row) => row.url_vmp ? `<a href="${row.url_vmp}" target="_blank" onclick="event.stopPropagation()">Lenke</a>` : '-' },
+    { id: 'url_unt', title: 'Untappd URL (Rå)', type: 'text', visible: false, niche: true, width: '100px', render: (row) => row.url_unt ? `<a href="${row.url_unt}" target="_blank" onclick="event.stopPropagation()">Lenke</a>` : '-' },
+    { id: 'vmp_image', title: 'VMP Bilde URL', type: 'text', visible: false, niche: true, width: '100px', render: (row) => row.vmp_image ? `<a href="${row.vmp_image}" target="_blank" onclick="event.stopPropagation()">Lenke</a>` : '-' },
+    { id: 'url_image', title: 'Untappd Bilde URL', type: 'text', visible: false, niche: true, width: '100px', render: (row) => row.url_image && row.url_image !== 'https://assets.untappd.com/' ? `<a href="${row.url_image}" target="_blank" onclick="event.stopPropagation()">Lenke</a>` : '-' },
+    { id: 'brewery_url', title: 'Bryggeri URL', type: 'text', visible: false, niche: true, width: '100px', render: (row) => row.brewery_url ? `<a href="${row.brewery_url}" target="_blank" onclick="event.stopPropagation()">Lenke</a>` : '-' },
+    { id: 'brewery_label', title: 'Bryggeri Logo URL', type: 'text', visible: false, niche: true, width: '100px', render: (row) => row.brewery_label ? `<a href="${row.brewery_label}" target="_blank" onclick="event.stopPropagation()">Lenke</a>` : '-' }
 ];
 
 let allBeers = [];
@@ -408,6 +408,18 @@ function renderFilterRow() {
             group.appendChild(minInput);
             group.appendChild(maxInput);
             th.appendChild(group);
+        } else if (col.type === 'boolean') {
+            const select = document.createElement('select');
+            select.className = 'filter-input-text';
+            select.style.padding = '2px';
+            select.innerHTML = '<option value="">Alle</option><option value="true">Ja</option><option value="false">Nei</option>';
+            select.value = colFilters[col.id] !== undefined ? colFilters[col.id] : '';
+            select.addEventListener('change', (e) => {
+                if (e.target.value === '') delete colFilters[col.id];
+                else colFilters[col.id] = e.target.value;
+                renderTable();
+            });
+            th.appendChild(select);
         }
         
         tableFilters.appendChild(th);
@@ -456,6 +468,7 @@ function getFilteredAndSortedData() {
         if (activeFilters.untStyle.size > 0 && !activeFilters.untStyle.has(beer.unt_style)) return false;
         if (activeFilters.brewery.size > 0 && !activeFilters.brewery.has(beer.unt_brewery)) return false;
         if (activeFilters.mainCategory.size > 0 && !activeFilters.mainCategory.has(beer.vmp_main_category)) return false;
+        if (activeFilters.award.size > 0 && !activeFilters.award.has(beer.award_text)) return false;
         
         if (hideDiscontinued && beer.is_discontinued) return false;
         
@@ -483,6 +496,14 @@ function getFilteredAndSortedData() {
                     if (cellVal === null || cellVal === undefined) return false;
                     if (filterVal.min !== null && cellVal < filterVal.min) return false;
                     if (filterVal.max !== null && cellVal > filterVal.max) return false;
+                }
+            } else if (col.type === 'boolean') {
+                if (filterVal !== undefined) {
+                    const isTrue = filterVal === 'true';
+                    if (col.id === 'in_production' && cellVal === null) {
+                        return false; 
+                    }
+                    if (!!cellVal !== isTrue) return false;
                 }
             }
         }
@@ -600,6 +621,13 @@ function renderFilterChips() {
                     renderTable();
                 });
             }
+        } else if (colDef.type === 'boolean') {
+            const dispVal = filterVal === 'true' ? 'Ja' : 'Nei';
+            addChip(`${colDef.title}: ${dispVal}`, () => {
+                delete colFilters[colId];
+                renderFilterRow();
+                renderTable();
+            });
         }
     }
 }

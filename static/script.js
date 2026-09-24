@@ -106,6 +106,28 @@ const closeModalBtn = document.getElementById('closeModal');
 const modalBody = document.getElementById('modalBody');
 
 async function init() {
+    const savedColumns = localStorage.getItem('vmp_columns');
+    if (savedColumns) {
+        try {
+            const parsed = JSON.parse(savedColumns);
+            COLUMNS.sort((a, b) => {
+                const indexA = parsed.findIndex(c => c.id === a.id);
+                const indexB = parsed.findIndex(c => c.id === b.id);
+                if (indexA === -1 && indexB === -1) return 0;
+                if (indexA === -1) return 1;
+                if (indexB === -1) return -1;
+                return indexA - indexB;
+            });
+            parsed.forEach(savedCol => {
+                const originalCol = COLUMNS.find(c => c.id === savedCol.id);
+                if (originalCol) {
+                    originalCol.visible = savedCol.visible;
+                    originalCol.niche = savedCol.niche;
+                }
+            });
+        } catch(e) { console.error('Could not load column state', e); }
+    }
+
     setupColumnToggles();
     renderHeader();
     
@@ -274,6 +296,12 @@ function setupDropdown(elementId, dataField, filterKey) {
         });
     }
 }
+function saveColumnState() {
+    const state = COLUMNS.map(c => ({ id: c.id, visible: c.visible, niche: c.niche }));
+    localStorage.setItem('vmp_columns', JSON.stringify(state));
+}
+
+let draggedItem = null;
 function setupColumnToggles() {
     mainColumns.innerHTML = '';
     nicheColumns.innerHTML = '';
@@ -281,16 +309,68 @@ function setupColumnToggles() {
     COLUMNS.forEach((col, index) => {
         const label = document.createElement('label');
         label.className = 'checkbox-label';
+        label.draggable = true;
+        label.dataset.id = col.id;
         
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = col.visible;
         checkbox.addEventListener('change', (e) => {
-            COLUMNS[index].visible = e.target.checked;
+            COLUMNS.find(c => c.id === col.id).visible = e.target.checked;
+            saveColumnState();
             renderHeader();
             renderTable();
         });
-
+        
+        label.addEventListener('dragstart', function(e) {
+            draggedItem = this;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+            this.classList.add('dragging');
+        });
+        
+        label.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        });
+        
+        label.addEventListener('dragenter', function(e) {
+            if (this !== draggedItem) this.classList.add('drag-over');
+        });
+        
+        label.addEventListener('dragleave', function(e) {
+            this.classList.remove('drag-over');
+        });
+        
+        label.addEventListener('drop', function(e) {
+            e.stopPropagation();
+            this.classList.remove('drag-over');
+            
+            if (draggedItem !== this) {
+                const draggedId = draggedItem.dataset.id;
+                const targetId = this.dataset.id;
+                
+                const draggedIndex = COLUMNS.findIndex(c => c.id === draggedId);
+                const targetIndex = COLUMNS.findIndex(c => c.id === targetId);
+                
+                COLUMNS[draggedIndex].niche = COLUMNS[targetIndex].niche;
+                
+                const [item] = COLUMNS.splice(draggedIndex, 1);
+                COLUMNS.splice(targetIndex, 0, item);
+                
+                saveColumnState();
+                setupColumnToggles();
+                renderHeader();
+                renderTable();
+            }
+            return false;
+        });
+        
+        label.addEventListener('dragend', function(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.checkbox-label').forEach(el => el.classList.remove('drag-over'));
+        });
         
         label.appendChild(checkbox);
         label.appendChild(document.createTextNode(col.title));

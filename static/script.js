@@ -83,6 +83,7 @@ let activeFilters = {
     style: new Set(),
     untStyle: new Set(),
     brewery: new Set(),
+    award: new Set(),
     mainCategory: new Set()
 };
 
@@ -115,7 +116,11 @@ async function init() {
         let sumRating = 0;
         let sumCount = 0;
         let numValid = 0;
+        
         allBeers.forEach(b => {
+            // Sett award_text for filter
+            b.award_text = b.has_community_award ? 'Ja' : 'Nei';
+
             if (b.match_confidence && b.match_confidence > 50 && b.rating_score > 0 && b.rating_count > 0) {
                 sumRating += b.rating_score;
                 sumCount += b.rating_count;
@@ -146,6 +151,7 @@ async function init() {
         setupDropdown('dropdownBrewery', 'unt_brewery', 'brewery');
         setupDropdown('dropdownMainCategory', 'vmp_main_category', 'mainCategory');
         setupDropdown('dropdownUntStyle', 'unt_style', 'untStyle');
+        setupDropdown('dropdownAward', 'award_text', 'award');
         
         renderTable();
     } catch (error) {
@@ -546,7 +552,8 @@ function renderFilterChips() {
         style: { label: 'Stil', element: 'dropdownStyle', defaultText: 'Stil' },
         untStyle: { label: 'Understil', element: 'dropdownUntStyle', defaultText: 'Understil' },
         country: { label: 'Land', element: 'dropdownCountry', defaultText: 'Land' },
-        brewery: { label: 'Bryggeri', element: 'dropdownBrewery', defaultText: 'Bryggeri' }
+        brewery: { label: 'Bryggeri', element: 'dropdownBrewery', defaultText: 'Bryggeri' },
+        award: { label: 'Toppliste', element: 'dropdownAward', defaultText: 'Toppliste' }
     };
 
     for (const key in dropdownMappings) {
@@ -714,7 +721,43 @@ function openModal(beer) {
             <div class="modal-info-row"><div class="modal-info-label">Allergener:</div><div class="modal-info-value">${beer.allergens || '-'}</div></div>
         </div>
         
-        ${awardsHtml}
+                ${awardsHtml}
+
+        <details style="margin-top:2rem; border-top:1px solid var(--border); padding-top:1rem; cursor: pointer;">
+            <summary style="font-weight:bold; color:var(--text-secondary); outline:none; padding: 0.5rem 0;">Vis Niche Data (Rå ID-er og systeminfo) ▾</summary>
+            <div style="margin-top: 1rem; cursor: text; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; cursor: auto;">
+                <div class="modal-section" style="margin: 0; padding: 1rem; background: var(--bg-dark); border-radius: 6px;">
+                    <h5 style="margin-top:0; margin-bottom: 10px; color:var(--text-secondary);">ID-er</h5>
+                    <div class="modal-info-row"><div class="modal-info-label">VMP Varenummer:</div><div class="modal-info-value">${beer.product_id_vmp}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">Untappd Beer ID:</div><div class="modal-info-value">${beer.unt_id || '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">VMP Prod. ID:</div><div class="modal-info-value">${beer.vmp_producer_id || '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">VMP Kat. ID:</div><div class="modal-info-value">${beer.vmp_category_id || '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">Untappd Stil ID:</div><div class="modal-info-value">${beer.unt_style_id || '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">Unt Bryggeri ID:</div><div class="modal-info-value">${beer.unt_brewery_id || '-'}</div></div>
+                </div>
+                <div class="modal-section" style="margin: 0; padding: 1rem; background: var(--bg-dark); border-radius: 6px;">
+                    <h5 style="margin-top:0; margin-bottom: 10px; color:var(--text-secondary);">System Data & Datoer</h5>
+                    <div class="modal-info-row"><div class="modal-info-label">Popularitetsscore:</div><div class="modal-info-value">${beer.popularity ? beer.popularity.toLocaleString() : '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">Breddegrad (Lat):</div><div class="modal-info-value">${beer.unt_lat || '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">Lengdegrad (Lng):</div><div class="modal-info-value">${beer.unt_lng || '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">Sist Endret (Unt):</div><div class="modal-info-value">${beer.index_date || '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">Sist Oppdatert (Lok):</div><div class="modal-info-value">${beer.last_synced_unt || '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label" style="min-width: 120px;">Stilbeskrivelse:</div><div class="modal-info-value" style="font-size: 0.8rem; line-height:1.2;">${beer.unt_style_description || '-'}</div></div>
+                </div>
+                <div class="modal-section" style="margin: 0; padding: 1rem; background: var(--bg-dark); border-radius: 6px; grid-column: 1 / -1;">
+                    <h5 style="margin-top:0; margin-bottom: 10px; color:var(--text-secondary);">Rå Lenker (Klikkbare)</h5>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="modal-info-row"><div class="modal-info-label">VMP URL (Rå):</div><div class="modal-info-value">${beer.url_vmp ? `<a href="${beer.url_vmp}" target="_blank" style="color:var(--accent);">Gå til side</a>` : '-'}</div></div>
+                        <div class="modal-info-row"><div class="modal-info-label">Untappd URL (Rå):</div><div class="modal-info-value">${beer.url_unt ? `<a href="${beer.url_unt}" target="_blank" style="color:var(--accent);">Gå til side</a>` : '-'}</div></div>
+                        <div class="modal-info-row"><div class="modal-info-label">VMP Bilde URL:</div><div class="modal-info-value">${beer.vmp_image ? `<a href="${beer.vmp_image}" target="_blank" style="color:var(--accent);">Se bilde</a>` : '-'}</div></div>
+                        <div class="modal-info-row"><div class="modal-info-label">Untappd Bilde URL:</div><div class="modal-info-value">${beer.url_image && beer.url_image !== 'https://assets.untappd.com/' ? `<a href="${beer.url_image}" target="_blank" style="color:var(--accent);">Se bilde</a>` : '-'}</div></div>
+                        <div class="modal-info-row"><div class="modal-info-label">Bryggeri URL:</div><div class="modal-info-value">${beer.brewery_url ? `<a href="${beer.brewery_url}" target="_blank" style="color:var(--accent);">Gå til side</a>` : '-'}</div></div>
+                        <div class="modal-info-row"><div class="modal-info-label">Bryggeri Logo URL:</div><div class="modal-info-value">${beer.brewery_label ? `<a href="${beer.brewery_label}" target="_blank" style="color:var(--accent);">Se logo</a>` : '-'}</div></div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
     `;
     
     modalBody.innerHTML = html;

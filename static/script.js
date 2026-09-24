@@ -49,10 +49,10 @@ const COLUMNS = [
     { id: 'is_discontinued', title: 'Utgått (VMP)', type: 'none', visible: false, niche: true, width: '100px', render: (row) => row.is_discontinued ? 'Ja' : 'Nei' },
     
     { id: 'in_production', title: 'I Produksjon (Untappd)', type: 'none', visible: false, niche: true, width: '160px', render: (row) => row.in_production === null ? '-' : (row.in_production ? 'Ja' : 'Nei') },
-    { id: 'has_community_award', title: 'På Untappd Toppliste', type: 'none', visible: false, niche: true, width: '160px', render: (row) => row.has_community_award ? 'Ja' : 'Nei' },
+    { id: 'has_community_award', title: 'På Untappd Toppliste', type: 'none', visible: false, niche: false, width: '160px', render: (row) => row.has_community_award ? 'Ja' : 'Nei' },
     { id: 'popularity', title: 'Popularitetsscore', type: 'number', visible: false, niche: true, width: '130px', render: (row) => row.popularity ? row.popularity.toLocaleString() : '-' },
     { id: 'unt_style_description', title: 'Stilbeskrivelse', type: 'text', visible: false, niche: true, width: '250px', render: (row) => row.unt_style_description || '-' },
-    { id: 'unt_is_beer', title: 'Er Ekte Øl', type: 'none', visible: false, niche: true, width: '100px', render: (row) => row.unt_is_beer === null ? '-' : (row.unt_is_beer ? 'Ja' : 'Nei') },
+    
     { id: 'last_synced_unt', title: 'Sist Oppdatert (Lokal)', type: 'text', visible: false, niche: true, width: '150px', render: (row) => row.last_synced_unt ? row.last_synced_unt.split(' ')[0] : '-' },
     { id: 'index_date', title: 'Sist Endret (Untappd)', type: 'text', visible: false, niche: true, width: '150px', render: (row) => row.index_date ? row.index_date.split('T')[0] : '-' },
     { id: 'unt_lat', title: 'Breddegrad (Lat)', type: 'number', visible: false, niche: true, width: '120px', render: (row) => row.unt_lat || '-' },
@@ -617,18 +617,35 @@ function openModal(beer) {
             const awards = JSON.parse(beer.community_awards);
             if (Array.isArray(awards) && awards.length > 0) {
                 const awardList = awards.map(a => {
-                    if (typeof a === 'string') return `<li>⭐ ${a}</li>`;
-                    if (typeof a === 'object' && a !== null) {
-                        const awardName = a.name || a.title || a.award_name || a.award || Object.values(a)[0] || JSON.stringify(a);
-                        return `<li style="margin-bottom:4px;">⭐ ${awardName}</li>`;
-                    }
-                    return '';
+                    let rankEmoji = '⭐';
+                    let rankText = a.style_rank ? `${a.style_rank}. plass` : 'Toppliste';
+                    if (a.style_rank === 1) rankEmoji = '🥇';
+                    else if (a.style_rank === 2) rankEmoji = '🥈';
+                    else if (a.style_rank === 3) rankEmoji = '🥉';
+                    
+                    const region = a.region || 'Ukjent sted';
+                    const year = a.year || '';
+                    const style = beer.unt_style || 'Ukjent stil';
+                    
+                    return `
+                        <li style="margin-bottom: 12px; background: var(--bg-dark); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                            <div style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 4px;">
+                                ${rankEmoji} <strong>${rankText}</strong>
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.95rem;">
+                                <strong>Stil:</strong> ${style}
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.95rem;">
+                                <strong>Hvor:</strong> ${region} ${year ? `(${year})` : ''}
+                            </div>
+                        </li>
+                    `;
                 }).join('');
                 
                 awardsHtml = `
-                    <div class="modal-section" style="margin-top:1rem; border-top:1px solid var(--border); padding-top:1rem;">
-                        <h4 style="border:none; margin-bottom:0.5rem; color:var(--accent);">Untappd Utmerkelser</h4>
-                        <ul style="list-style-type:none; padding:0; margin:0; color:var(--text-secondary); font-size:0.95rem;">
+                    <div class="modal-section" style="margin-top:1.5rem; border-top:1px solid var(--border); padding-top:1.5rem;">
+                        <h4 style="border:none; margin-bottom:1rem; color:var(--accent);">Untappd Utmerkelser</h4>
+                        <ul style="list-style-type:none; padding:0; margin:0;">
                             ${awardList}
                         </ul>
                     </div>

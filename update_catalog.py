@@ -1,5 +1,5 @@
 """
-update_catalog.py – Oppdaterer vmp_all_products mot Vinmonopolet-APIet.
+update_catalog.py - Oppdaterer vmp_all_products mot Vinmonopolet-APIet.
 
 Logikk:
   1. Beholder eksisterende needs_sync flagg (slik at ufullstendige skrapinger huskes)
@@ -22,11 +22,11 @@ from datetime import datetime
 # ---------------------------------------------------------------------------
 # Konfigurasjon
 # ---------------------------------------------------------------------------
-DB_PATH    = "vmp_untappd_new.db"
-API_KEY    = "0803107360064be187d02eb284f7e146"
-API_URL    = "https://apis.vinmonopolet.no/products/v0/details-normal"
-MAX_RESULTS = 1000        # maks per API-kall (VMP-grense)
-DELAY       = 1.2         # sekunder mellom sider (maks 60 kall/min)
+DB_PATH = "vmp_untappd_new.db"
+API_KEY = "0803107360064be187d02eb284f7e146"
+API_URL = "https://apis.vinmonopolet.no/products/v0/details-normal"
+MAX_RESULTS = 1000  # maks per API-kall (VMP-grense)
+DELAY = 1.2  # sekunder mellom sider (maks 60 kall/min)
 MAX_RETRIES = 5
 
 
@@ -49,10 +49,14 @@ def fetch_page(session: requests.Session, start: int) -> list | None:
                 return resp.json()
             elif resp.status_code == 429:
                 wait = 10 * attempt
-                log(f"  Rate limit (429) – venter {wait}s (forsøk {attempt}/{MAX_RETRIES})")
+                log(
+                    f"  Rate limit (429) – venter {wait}s (forsøk {attempt}/{MAX_RETRIES})"
+                )
                 time.sleep(wait)
             else:
-                log(f"  HTTP {resp.status_code} – prøver igjen ({attempt}/{MAX_RETRIES})")
+                log(
+                    f"  HTTP {resp.status_code} – prøver igjen ({attempt}/{MAX_RETRIES})"
+                )
                 time.sleep(3)
         except requests.exceptions.RequestException as exc:
             log(f"  Nettverksfeil: {exc} – prøver igjen ({attempt}/{MAX_RETRIES})")
@@ -74,7 +78,7 @@ def update_catalog(db_path: str = DB_PATH) -> None:
 
     # -------------------------------------------------------------------
     # (Tidligere Steg 1 som nullstilte needs_sync er fjernet)
-    # Vi vil beholde eksisterende needs_sync = 1 for produkter som 
+    # Vi vil beholde eksisterende needs_sync = 1 for produkter som
     # vmp_scraper.py ikke har rukket å behandle enda.
     # -------------------------------------------------------------------
 
@@ -99,12 +103,12 @@ def update_catalog(db_path: str = DB_PATH) -> None:
     log("Steg 2: Henter produkter fra Vinmonopolet-APIet...")
 
     session = requests.Session()
-    start           = 0
-    totalt_hentet   = 0
-    ny_count        = 0
+    start = 0
+    totalt_hentet = 0
+    ny_count = 0
     oppdatert_count = 0
-    uendret_count   = 0
-    api_ids: set[int] = set()   # alle ID-er vi ser fra APIet
+    uendret_count = 0
+    api_ids: set[int] = set()  # alle ID-er vi ser fra APIet
 
     while True:
         log(f"  Henter posisjon {start}...")
@@ -115,21 +119,21 @@ def update_catalog(db_path: str = DB_PATH) -> None:
             break
 
         if len(data) == 0:
-            log("  Tom side – alle produkter hentet.")
+            log("  Tom side - alle produkter hentet.")
             break
 
         totalt_hentet += len(data)
 
         inserts = []
-        updates_changed = []   # (date, time, id) – endret dato/tid
+        updates_changed = []  # (date, time, id) – endret dato/tid
         updates_unclassified = []  # (id,) – is_beer IS NULL
 
         for item in data:
-            basic        = item.get("basic", {})
+            basic = item.get("basic", {})
             last_changed = item.get("lastChanged", {})
 
-            p_id   = basic.get("productId")
-            name   = basic.get("productShortName")
+            p_id = basic.get("productId")
+            name = basic.get("productShortName")
             d_date = last_changed.get("date")
             d_time = last_changed.get("time")
 
@@ -210,18 +214,14 @@ def update_catalog(db_path: str = DB_PATH) -> None:
     # -------------------------------------------------------------------
     log("Steg 4: Sjekker for produkter fjernet fra VMP...")
 
-    cur.execute(
-        "SELECT product_id_vmp, is_beer FROM vmp_all_products"
-    )
+    cur.execute("SELECT product_id_vmp, is_beer FROM vmp_all_products")
     all_db_ids = {row["product_id_vmp"]: row["is_beer"] for row in cur.fetchall()}
 
     fjernet_ids = [pid for pid in all_db_ids if pid not in api_ids]
 
     if fjernet_ids:
         # Merk som is_discontinued i vmp_products (kun de som er øl)
-        beer_fjernet = [
-            (str(pid),) for pid in fjernet_ids if all_db_ids[pid] == 1
-        ]
+        beer_fjernet = [(str(pid),) for pid in fjernet_ids if all_db_ids[pid] == 1]
         if beer_fjernet:
             cur.executemany(
                 "UPDATE vmp_products SET is_discontinued = 1 WHERE product_id_vmp = ?",
@@ -235,7 +235,9 @@ def update_catalog(db_path: str = DB_PATH) -> None:
             fjernet_ids,
         )
         conn.commit()
-        log(f"  {len(fjernet_ids)} produkter ikke lenger i API ({len(beer_fjernet)} øl markert som utgått)")
+        log(
+            f"  {len(fjernet_ids)} produkter ikke lenger i API ({len(beer_fjernet)} øl markert som utgått)"
+        )
     else:
         log("  Ingen produkter fjernet fra VMP.")
 
@@ -245,7 +247,9 @@ def update_catalog(db_path: str = DB_PATH) -> None:
     cur.execute("SELECT COUNT(*) FROM vmp_all_products WHERE needs_sync = 1")
     trenger_sync = cur.fetchone()[0]
 
-    cur.execute("SELECT COUNT(*) FROM vmp_all_products WHERE needs_sync = 1 AND is_beer = 1")
+    cur.execute(
+        "SELECT COUNT(*) FROM vmp_all_products WHERE needs_sync = 1 AND is_beer = 1"
+    )
     trenger_sync_ol = cur.fetchone()[0]
 
     conn.close()

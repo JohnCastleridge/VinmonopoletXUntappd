@@ -810,7 +810,11 @@ function openModal(beer) {
                 <div class="modal-info-row"><div class="modal-info-label">Understil:</div><div class="modal-info-value">${beer.unt_style || '-'}</div></div>
                 <div class="modal-info-row"><div class="modal-info-label">ABV:</div><div class="modal-info-value">${beer.unt_abv ? beer.unt_abv + '%' : '-'}</div></div>
                 <div class="modal-info-row"><div class="modal-info-label">IBU:</div><div class="modal-info-value">${beer.unt_ibu || '-'}</div></div>
-                <div class="modal-info-row"><div class="modal-info-label">Rating:</div><div class="modal-info-value">${beer.rating_score ? beer.rating_score.toFixed(2) + ' (' + beer.rating_count.toLocaleString() + ' vurderinger)' : '-'}</div></div>
+                <div style="display: flex; flex-direction: column; margin-bottom: 0.8rem; font-size: 0.95rem; border-left: 2px solid var(--rating-color); padding-left: 10px; margin-top: 10px;">
+                    <div style="color: var(--rating-color); font-weight: 500; margin-bottom: 4px;">Rating:</div>
+                    <div style="color: var(--rating-color); font-size: 1.1rem; font-weight: bold;">${beer.rating_score ? beer.rating_score.toFixed(2) : '-'}</div>
+                </div>
+                <div class="modal-info-row"><div class="modal-info-label">Vurderinger:</div><div class="modal-info-value">${beer.rating_count ? beer.rating_count.toLocaleString() : '-'}</div></div>
                 <div class="modal-info-row"><div class="modal-info-label">Bayesian Rating:</div><div class="modal-info-value">${beer.bayesian_rating ? beer.bayesian_rating.toFixed(2) : '-'}</div></div>
                 <div class="modal-info-row"><div class="modal-info-label">Popularitet:</div><div class="modal-info-value">${beer.popularity ? beer.popularity.toLocaleString() : '-'}</div></div>
                 <div class="modal-info-row"><div class="modal-info-label">I Produksjon:</div><div class="modal-info-value">${beer.in_production === null ? '-' : (beer.in_production ? 'Ja' : 'Nei')}</div></div>

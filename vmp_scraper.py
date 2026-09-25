@@ -226,7 +226,7 @@ def scrape_vmp_product(vmp_id: int | str, db_path: str = DB_PATH) -> bool:
     # -------------------------------------------------------------------
     # Skriv til database
     # -------------------------------------------------------------------
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=60)
     conn.execute("PRAGMA foreign_keys = OFF")
     cur = conn.cursor()
 

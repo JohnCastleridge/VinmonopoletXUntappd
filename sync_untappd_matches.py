@@ -12,7 +12,7 @@ import time
 def sync_all_untappd_matches():
     print("Starter synkronisering av Untappd-matcher for alle øl...")
     
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=60)
     cur = conn.cursor()
     
     # Hent alle VMP-produkter som er under kategorien "Øl" (og Mjød/Sider hvis ønskelig, men vi starter med Øl)

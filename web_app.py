@@ -18,7 +18,7 @@ def index():
 
 @app.route('/api/beers')
 def get_beers():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=60)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     

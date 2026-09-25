@@ -72,7 +72,7 @@ def fetch_page(session: requests.Session, start: int) -> list | None:
 def update_catalog(db_path: str = DB_PATH) -> None:
     log("=== Starter oppdatering av vmp_all_products ===")
 
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=60)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 

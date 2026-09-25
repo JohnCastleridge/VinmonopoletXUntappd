@@ -3,6 +3,7 @@ import requests
 import json
 import time
 import sys
+import argparse
 
 DB_PATH = "vmp_untappd_new.db"
 
@@ -37,15 +38,25 @@ def get_beer_by_id(bid):
 
 
 def main():
-    conn = sqlite3.connect(DB_PATH)
+    parser = argparse.ArgumentParser(description="Oppdater Untappd-data for eksisterende øl.")
+    parser.add_argument("--limit", type=int, default=None, help="Maks antall øl som skal oppdateres i denne kjøringen.")
+    args = parser.parse_args()
+
+    conn = sqlite3.connect(DB_PATH, timeout=60)
     c = conn.cursor()
 
     # Hent alle unike Untappd øl vi har lagret
-    c.execute("SELECT bid, beer_name FROM unt_beers")
+    c.execute("SELECT bid, beer_name FROM unt_beers ORDER BY last_synced_unt ASC NULLS FIRST")
     beers = c.fetchall()
+    
+    if args.limit:
+        beers = beers[:args.limit]
 
     total = len(beers)
-    print(f"Fant {total} Untappd-øl i databasen. Starter oppdatering av ferske data...")
+    if args.limit and total == args.limit:
+        print(f"Hentet de {total} ølene som har ventet lengst på oppdatering...")
+    else:
+        print(f"Fant {total} Untappd-øl i databasen. Starter oppdatering av ferske data...")
     print("Dette kan ta litt tid (ca. 3 øl i sekundet for å unngå IP-blokkering).\\n")
 
     updated_count = 0
@@ -99,9 +110,8 @@ def main():
         sys.stdout.write(f"\\rOppdatert {i}/{total} [{safe_name:<37}]")
         sys.stdout.flush()
 
-        # Lagre til disk hver 50. øl, slik at du ikke mister fremdrift om du stopper scriptet
-        if i % 50 == 0:
-            conn.commit()
+        # Lagre til disk for hvert øl for å slippe databaselåsen (veldig viktig når vi sover i 0.3 sekunder)
+        conn.commit()
 
         # VELDIG VIKTIG PAUSE for å unngå å bli blokkert av Algolia (rate limits)
         time.sleep(0.3)

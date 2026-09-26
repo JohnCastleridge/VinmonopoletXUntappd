@@ -4,7 +4,7 @@ sync_products.py - Iterer over vmp_all_products og oppdater alle som:
   2. Er øl (is_beer = 1 ELLER is_beer IS NULL) og mangler category_id i vmp_products
 
 Bruker scrape_vmp_product() fra vmp_scraper.py.
-Respekterer VMP-rate-limit (~60 kall/min → 1.2s delay).
+Respekterer VMP-rate-limitOpprydning av Modal og nye standardkolonner
 """
 
 import sqlite3

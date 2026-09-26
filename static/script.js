@@ -1,70 +1,64 @@
 // Kolonne-konfigurasjon
 const COLUMNS = [
-    // --- HOVEDKOLONNER (niche: false) ---
+    // --- HOVEDKOLONNER (niche: false) i ønsket rekkefølge ---
     { id: 'image', title: 'Bilde', type: 'none', visible: true, niche: false, width: '100px', render: (row) => {
         let imgSrc = row.vmp_image || row.url_image;
         if (imgSrc === 'https://assets.untappd.com/') imgSrc = null;
         return imgSrc ? `<img src="${imgSrc}" class="beer-img" loading="lazy">` : '';
     }},
-    { id: 'links', title: 'Lenker', type: 'none', visible: true, niche: false, width: '120px', render: (row) => {
-        let html = `<a href="https://www.vinmonopolet.no/p/${row.product_id_vmp}" target="_blank" onclick="event.stopPropagation()" title="Se på Vinmonopolet" style="text-decoration:none; margin-right:5px; background:var(--bg-dark); padding:4px 6px; border-radius:4px; border:1px solid var(--border); font-size:1.1rem; display:inline-block;">🍇</a>`;
+    { id: 'links', title: 'Lenker', type: 'none', visible: false, niche: false, width: '120px', render: (row) => {
+        let html = `<a href="https://www.vinmonopolet.no/p/${row.product_id_vmp}" target="_blank" onclick="event.stopPropagation()" title="Se på Vinmonopolet" style="text-decoration:none; margin-right:5px; background:var(--bg-dark); padding:4px 6px; border-radius:4px; border:1px solid var(--border); font-size:1.1rem; display:inline-block;">🍷</a>`;
         if (row.url_unt) html += `<a href="${row.url_unt}" target="_blank" onclick="event.stopPropagation()" title="Se på Untappd" style="text-decoration:none; background:var(--bg-dark); padding:4px 6px; border-radius:4px; border:1px solid var(--border); font-size:1.1rem; display:inline-block;">🍺</a>`;
         return html;
     }},
-    { id: 'match_confidence', title: 'Match (%)', type: 'number', visible: true, niche: false, width: '100px', render: (row) => row.match_confidence ? `${row.match_confidence.toFixed(1)}%` : '-' },
-    
-    { id: 'vmp_name', title: 'Navn (VMP)', type: 'text', visible: true, niche: false, width: '250px', render: (row) => row.vmp_name },
-    { id: 'unt_name', title: 'Navn (Untappd)', type: 'text', visible: false, niche: false, width: '250px', render: (row) => row.unt_name || '-' },
-    
-    { id: 'vmp_brewery', title: 'Produsent (VMP)', type: 'text', visible: false, niche: false, width: '200px', render: (row) => row.vmp_brewery || '-' },
+    { id: 'unt_name', title: 'Navn (Untappd)', type: 'text', visible: true, niche: false, width: '250px', render: (row) => row.unt_name || '-' },
+    { id: 'vmp_name', title: 'Navn (VMP)', type: 'text', visible: false, niche: false, width: '250px', render: (row) => row.vmp_name },
     { id: 'unt_brewery', title: 'Bryggeri (Untappd)', type: 'text', visible: true, niche: false, width: '200px', render: (row) => row.unt_brewery || '-' },
-    
-    { id: 'vmp_country', title: 'Land', type: 'text', visible: false, niche: false, width: '120px', render: (row) => row.vmp_country || '-' },
-    { id: 'vmp_main_category', title: 'Hovedkategori', type: 'text', visible: false, niche: false, width: '140px', render: (row) => row.vmp_main_category || '-' },
-    { id: 'vmp_style', title: 'Stil (VMP)', type: 'text', visible: false, niche: false, width: '150px', render: (row) => row.vmp_style || '-' },
-    { id: 'unt_style', title: 'Understil (Untappd)', type: 'text', visible: false, niche: false, width: '180px', render: (row) => row.unt_style || '-' },
-    
-    { id: 'price', title: 'Pris', type: 'number', visible: true, niche: false, width: '100px', render: (row) => row.price ? `${row.price.toFixed(2)} kr` : '-' },
-    { id: 'volume_ml', title: 'Volum (ml)', type: 'number', visible: false, niche: false, width: '100px', render: (row) => row.volume_ml ? `${row.volume_ml} ml` : '-' },
-    { id: 'price_per_liter', title: 'Pris pr. Liter', type: 'number', visible: false, niche: false, width: '120px', render: (row) => row.price_per_liter ? `${row.price_per_liter.toFixed(2)} kr` : '-' },
-    
-    { id: 'vmp_abv', title: 'Alkohol % (VMP)', type: 'number', visible: false, niche: false, width: '120px', render: (row) => row.vmp_abv ? `${row.vmp_abv}%` : '-' },
-    { id: 'unt_abv', title: 'Alkohol % (Untappd)', type: 'number', visible: true, niche: false, width: '140px', render: (row) => row.unt_abv ? `${row.unt_abv}%` : '-' },
-    { id: 'unt_ibu', title: 'Bitterhet (IBU)', type: 'number', visible: false, niche: false, width: '120px', render: (row) => row.unt_ibu || '-' },
+    { id: 'vmp_brewery', title: 'Produsent (VMP)', type: 'text', visible: false, niche: false, width: '200px', render: (row) => row.vmp_brewery || '-' },
     
     { id: 'rating_score', title: 'Rating (Untappd)', type: 'number', visible: true, niche: false, width: '120px', render: (row) => row.rating_score ? `<span class="rating">⭐ ${row.rating_score.toFixed(2)}</span>` : '-' },
     { id: 'bayesian_rating', title: 'Bayesian Rating', type: 'number', visible: false, niche: false, width: '130px', render: (row) => row.bayesian_rating ? `<span class="rating">⭐ ${row.bayesian_rating.toFixed(2)}</span>` : '-' },
-    { id: 'rating_count', title: 'Antall Ratinger', type: 'number', visible: false, niche: false, width: '120px', render: (row) => row.rating_count ? row.rating_count.toLocaleString() : '-' },
+    { id: 'rating_count', title: 'Antall Ratinger', type: 'number', visible: true, niche: false, width: '120px', render: (row) => row.rating_count ? row.rating_count.toLocaleString() : '-' },
+    
+    { id: 'vmp_main_category', title: 'Hovedkategori', type: 'text', visible: false, niche: false, width: '140px', render: (row) => row.vmp_main_category || '-' },
+    { id: 'vmp_style', title: 'Stil (VMP)', type: 'text', visible: false, niche: false, width: '150px', render: (row) => row.vmp_style || '-' },
+    { id: 'unt_style', title: 'Understil (Untappd)', type: 'text', visible: true, niche: false, width: '180px', render: (row) => row.unt_style || '-' },
+    { id: 'vmp_country', title: 'Land', type: 'text', visible: false, niche: false, width: '120px', render: (row) => row.vmp_country || '-' },
+    
+    { id: 'price', title: 'Pris', type: 'number', visible: false, niche: false, width: '100px', render: (row) => row.price ? `${row.price.toFixed(2)} kr` : '-' },
+    { id: 'volume_ml', title: 'Volum (ml)', type: 'number', visible: true, niche: false, width: '100px', render: (row) => row.volume_ml ? `${row.volume_ml} ml` : '-' },
+    { id: 'price_per_liter', title: 'Pris pr. Liter', type: 'number', visible: true, niche: false, width: '120px', render: (row) => row.price_per_liter ? `${row.price_per_liter.toFixed(2)} kr` : '-' },
+    
+    { id: 'unt_abv', title: 'Alkohol % (Untappd)', type: 'number', visible: true, niche: false, width: '140px', render: (row) => row.unt_abv ? `${row.unt_abv}%` : '-' },
+    { id: 'vmp_abv', title: 'Alkohol % (VMP)', type: 'number', visible: false, niche: false, width: '120px', render: (row) => row.vmp_abv ? `${row.vmp_abv}%` : '-' },
+    { id: 'unt_ibu', title: 'Bitterhet (IBU)', type: 'number', visible: false, niche: false, width: '120px', render: (row) => row.unt_ibu || '-' },
     
     { id: 'selection', title: 'Utvalg (VMP)', type: 'text', visible: false, niche: false, width: '130px', render: (row) => row.selection || '-' },
     { id: 'packaging', title: 'Emballasje', type: 'text', visible: false, niche: false, width: '120px', render: (row) => row.packaging || '-' },
     { id: 'vintage', title: 'Årgang', type: 'text', visible: false, niche: false, width: '100px', render: (row) => row.vintage || '-' },
+    { id: 'match_confidence', title: 'Match (%)', type: 'number', visible: false, niche: false, width: '100px', render: (row) => row.match_confidence ? `${row.match_confidence.toFixed(1)}%` : '-' },
 
     // --- NICHE KOLONNER (niche: true) ---
+    { id: 'has_community_award', title: 'På Untappd Toppliste', type: 'boolean', visible: false, niche: true, width: '160px', render: (row) => row.has_community_award ? 'Ja' : 'Nei' },
     { id: 'aroma', title: 'Aroma (VMP)', type: 'text', visible: false, niche: true, width: '200px', render: (row) => row.aroma || '-' },
     { id: 'taste', title: 'Smak (VMP)', type: 'text', visible: false, niche: true, width: '200px', render: (row) => row.taste || '-' },
     { id: 'color', title: 'Farge (VMP)', type: 'text', visible: false, niche: true, width: '150px', render: (row) => row.color || '-' },
     { id: 'method', title: 'Metode (VMP)', type: 'text', visible: false, niche: true, width: '200px', render: (row) => row.method || '-' },
     { id: 'allergens', title: 'Allergener', type: 'text', visible: false, niche: true, width: '150px', render: (row) => row.allergens || '-' },
     { id: 'is_discontinued', title: 'Utgått (VMP)', type: 'boolean', visible: false, niche: true, width: '100px', render: (row) => row.is_discontinued ? 'Ja' : 'Nei' },
-    
     { id: 'in_production', title: 'I Produksjon (Untappd)', type: 'boolean', visible: false, niche: true, width: '160px', render: (row) => row.in_production === null ? '-' : (row.in_production ? 'Ja' : 'Nei') },
-    { id: 'has_community_award', title: 'På Untappd Toppliste', type: 'boolean', visible: false, niche: false, width: '160px', render: (row) => row.has_community_award ? 'Ja' : 'Nei' },
     { id: 'popularity', title: 'Popularitetsscore', type: 'number', visible: false, niche: true, width: '130px', render: (row) => row.popularity ? row.popularity.toLocaleString() : '-' },
     { id: 'unt_style_description', title: 'Stilbeskrivelse', type: 'text', visible: false, niche: true, width: '250px', render: (row) => row.unt_style_description || '-' },
-    
     { id: 'last_synced_unt', title: 'Sist Oppdatert (Lokal)', type: 'text', visible: false, niche: true, width: '150px', render: (row) => row.last_synced_unt ? row.last_synced_unt.split(' ')[0] : '-' },
     { id: 'index_date', title: 'Sist Endret (Untappd)', type: 'text', visible: false, niche: true, width: '150px', render: (row) => row.index_date ? row.index_date.split('T')[0] : '-' },
     { id: 'unt_lat', title: 'Breddegrad (Lat)', type: 'number', visible: false, niche: true, width: '120px', render: (row) => row.unt_lat || '-' },
     { id: 'unt_lng', title: 'Lengdegrad (Lng)', type: 'number', visible: false, niche: true, width: '120px', render: (row) => row.unt_lng || '-' },
-    
     { id: 'product_id_vmp', title: 'VMP Varenummer', type: 'text', visible: false, niche: true, width: '120px', render: (row) => row.product_id_vmp },
     { id: 'unt_id', title: 'Untappd Beer ID', type: 'text', visible: false, niche: true, width: '120px', render: (row) => row.unt_id || '-' },
     { id: 'vmp_producer_id', title: 'VMP Produsent ID', type: 'text', visible: false, niche: true, width: '130px', render: (row) => row.vmp_producer_id || '-' },
     { id: 'vmp_category_id', title: 'VMP Kategori ID', type: 'text', visible: false, niche: true, width: '120px', render: (row) => row.vmp_category_id || '-' },
     { id: 'unt_style_id', title: 'Untappd Stil ID', type: 'text', visible: false, niche: true, width: '120px', render: (row) => row.unt_style_id || '-' },
     { id: 'unt_brewery_id', title: 'Untappd Bryggeri ID', type: 'text', visible: false, niche: true, width: '140px', render: (row) => row.unt_brewery_id || '-' },
-    
     { id: 'url_vmp', title: 'VMP URL (Rå)', type: 'text', visible: false, niche: true, width: '100px', render: (row) => row.url_vmp ? `<a href="${row.url_vmp}" target="_blank" onclick="event.stopPropagation()">Lenke</a>` : '-' },
     { id: 'url_unt', title: 'Untappd URL (Rå)', type: 'text', visible: false, niche: true, width: '100px', render: (row) => row.url_unt ? `<a href="${row.url_unt}" target="_blank" onclick="event.stopPropagation()">Lenke</a>` : '-' },
     { id: 'vmp_image', title: 'VMP Bilde URL', type: 'text', visible: false, niche: true, width: '100px', render: (row) => row.vmp_image ? `<a href="${row.vmp_image}" target="_blank" onclick="event.stopPropagation()">Lenke</a>` : '-' },
@@ -106,7 +100,7 @@ const closeModalBtn = document.getElementById('closeModal');
 const modalBody = document.getElementById('modalBody');
 
 async function init() {
-    const savedColumns = localStorage.getItem('vmp_columns');
+    const savedColumns = localStorage.getItem('vmp_columns_v3');
     if (savedColumns) {
         try {
             const parsed = JSON.parse(savedColumns);
@@ -298,7 +292,7 @@ function setupDropdown(elementId, dataField, filterKey) {
 }
 function saveColumnState() {
     const state = COLUMNS.map(c => ({ id: c.id, visible: c.visible, niche: c.niche }));
-    localStorage.setItem('vmp_columns', JSON.stringify(state));
+    localStorage.setItem('vmp_columns_v3', JSON.stringify(state));
 }
 
 let draggedItem = null;
@@ -798,8 +792,7 @@ function openModal(beer) {
                 <div class="modal-info-row"><div class="modal-info-label">Årgang:</div><div class="modal-info-value">${beer.vintage || '-'}</div></div>
                 <div class="modal-info-row"><div class="modal-info-label">Utvalg:</div><div class="modal-info-value">${beer.selection || '-'}</div></div>
                 <div class="modal-info-row"><div class="modal-info-label">Emballasje:</div><div class="modal-info-value">${beer.packaging || '-'}</div></div>
-                <div class="modal-info-row"><div class="modal-info-label">VMP ID:</div><div class="modal-info-value">${beer.product_id_vmp}</div></div>
-                <div class="modal-info-row"><div class="modal-info-label">Utgått:</div><div class="modal-info-value" style="color:${beer.is_discontinued ? '#ef4444' : 'inherit'}">${beer.is_discontinued ? 'Ja' : 'Nei'}</div></div>
+                                <div class="modal-info-row"><div class="modal-info-label">Utgått:</div><div class="modal-info-value" style="color:${beer.is_discontinued ? '#ef4444' : 'inherit'}">${beer.is_discontinued ? 'Ja' : 'Nei'}</div></div>
             </div>
 
             <div class="modal-section">
@@ -816,10 +809,7 @@ function openModal(beer) {
                 </div>
                 <div class="modal-info-row"><div class="modal-info-label">Vurderinger:</div><div class="modal-info-value">${beer.rating_count ? beer.rating_count.toLocaleString() : '-'}</div></div>
                 <div class="modal-info-row"><div class="modal-info-label">Bayesian Rating:</div><div class="modal-info-value">${beer.bayesian_rating ? beer.bayesian_rating.toFixed(2) : '-'}</div></div>
-                <div class="modal-info-row"><div class="modal-info-label">Popularitet:</div><div class="modal-info-value">${beer.popularity ? beer.popularity.toLocaleString() : '-'}</div></div>
-                <div class="modal-info-row"><div class="modal-info-label">I Produksjon:</div><div class="modal-info-value">${beer.in_production === null ? '-' : (beer.in_production ? 'Ja' : 'Nei')}</div></div>
-                <div class="modal-info-row"><div class="modal-info-label">Sist synkronisert:</div><div class="modal-info-value">${beer.last_synced_unt ? beer.last_synced_unt.split(' ')[0] : '-'}</div></div>
-                
+                                                                
                 ${beer.unt_description ? `<div class="modal-desc">"${beer.unt_description}"</div>` : ''}
             </div>
         </div>
@@ -840,7 +830,7 @@ function openModal(beer) {
             <div style="margin-top: 1rem; cursor: text; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; cursor: auto;">
                 <div class="modal-section" style="margin: 0; padding: 1rem; background: var(--bg-dark); border-radius: 6px;">
                     <h5 style="margin-top:0; margin-bottom: 10px; color:var(--text-secondary);">ID-er</h5>
-                    <div class="modal-info-row"><div class="modal-info-label">VMP Varenummer:</div><div class="modal-info-value">${beer.product_id_vmp}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">VMP ID:</div><div class="modal-info-value">${beer.product_id_vmp}</div></div>
                     <div class="modal-info-row"><div class="modal-info-label">Untappd Beer ID:</div><div class="modal-info-value">${beer.unt_id || '-'}</div></div>
                     <div class="modal-info-row"><div class="modal-info-label">VMP Prod. ID:</div><div class="modal-info-value">${beer.vmp_producer_id || '-'}</div></div>
                     <div class="modal-info-row"><div class="modal-info-label">VMP Kat. ID:</div><div class="modal-info-value">${beer.vmp_category_id || '-'}</div></div>
@@ -849,11 +839,12 @@ function openModal(beer) {
                 </div>
                 <div class="modal-section" style="margin: 0; padding: 1rem; background: var(--bg-dark); border-radius: 6px;">
                     <h5 style="margin-top:0; margin-bottom: 10px; color:var(--text-secondary);">System Data & Datoer</h5>
-                    <div class="modal-info-row"><div class="modal-info-label">Popularitetsscore:</div><div class="modal-info-value">${beer.popularity ? beer.popularity.toLocaleString() : '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">Popularitet:</div><div class="modal-info-value">${beer.popularity ? beer.popularity.toLocaleString() : '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">I Produksjon:</div><div class="modal-info-value">${beer.in_production === null ? '-' : (beer.in_production ? 'Ja' : 'Nei')}</div></div>
                     <div class="modal-info-row"><div class="modal-info-label">Breddegrad (Lat):</div><div class="modal-info-value">${beer.unt_lat || '-'}</div></div>
                     <div class="modal-info-row"><div class="modal-info-label">Lengdegrad (Lng):</div><div class="modal-info-value">${beer.unt_lng || '-'}</div></div>
                     <div class="modal-info-row"><div class="modal-info-label">Sist Endret (Unt):</div><div class="modal-info-value">${beer.index_date || '-'}</div></div>
-                    <div class="modal-info-row"><div class="modal-info-label">Sist Oppdatert (Lok):</div><div class="modal-info-value">${beer.last_synced_unt || '-'}</div></div>
+                    <div class="modal-info-row"><div class="modal-info-label">Sist synkronisert:</div><div class="modal-info-value">${beer.last_synced_unt || '-'}</div></div>
                     <div class="modal-info-row"><div class="modal-info-label" style="min-width: 120px;">Stilbeskrivelse:</div><div class="modal-info-value" style="font-size: 0.8rem; line-height:1.2;">${beer.unt_style_description || '-'}</div></div>
                 </div>
                 <div class="modal-section" style="margin: 0; padding: 1rem; background: var(--bg-dark); border-radius: 6px; grid-column: 1 / -1;">

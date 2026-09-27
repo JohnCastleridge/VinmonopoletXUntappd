@@ -29,11 +29,11 @@ const COLUMNS = [
     { id: 'volume_ml', title: 'Volum (ml)', type: 'number', visible: true, niche: false, width: '100px', render: (row) => row.volume_ml ? `${row.volume_ml} ml` : '-' },
     { id: 'price_per_liter', title: 'Pris pr. Liter', type: 'number', visible: true, niche: false, width: '120px', render: (row) => row.price_per_liter ? `${row.price_per_liter.toFixed(2)} kr` : '-' },
     
-    { id: 'unt_abv', title: 'Alkohol % (Untappd)', type: 'number', visible: true, niche: false, width: '140px', render: (row) => row.unt_abv ? `${row.unt_abv}%` : '-' },
-    { id: 'vmp_abv', title: 'Alkohol % (VMP)', type: 'number', visible: false, niche: false, width: '120px', render: (row) => row.vmp_abv ? `${row.vmp_abv}%` : '-' },
-    { id: 'unt_ibu', title: 'Bitterhet (IBU)', type: 'number', visible: false, niche: false, width: '120px', render: (row) => row.unt_ibu || '-' },
+    { id: 'unt_abv', title: 'ABV (Untappd)', type: 'number', visible: true, niche: false, width: '140px', render: (row) => row.unt_abv ? `${row.unt_abv}%` : '-' },
+    { id: 'vmp_abv', title: 'ABV (VMP)', type: 'number', visible: false, niche: false, width: '120px', render: (row) => row.vmp_abv ? `${row.vmp_abv}%` : '-' },
+    { id: 'unt_ibu', title: 'IBU (Untappd)', type: 'number', visible: false, niche: false, width: '120px', render: (row) => row.unt_ibu || '-' },
     
-    { id: 'selection', title: 'Utvalg (VMP)', type: 'text', visible: false, niche: false, width: '130px', render: (row) => row.selection || '-' },
+    { id: 'selection', title: 'Utvalg', type: 'text', visible: false, niche: false, width: '130px', render: (row) => row.selection || '-' },
     { id: 'packaging', title: 'Emballasje', type: 'text', visible: false, niche: false, width: '120px', render: (row) => row.packaging || '-' },
     { id: 'vintage', title: 'Årgang', type: 'text', visible: false, niche: false, width: '100px', render: (row) => row.vintage || '-' },
     { id: 'match_confidence', title: 'Match (%)', type: 'number', visible: false, niche: false, width: '100px', render: (row) => row.match_confidence ? `${row.match_confidence.toFixed(1)}%` : '-' },
@@ -77,7 +77,6 @@ let activeFilters = {
     style: new Set(),
     untStyle: new Set(),
     brewery: new Set(),
-    award: new Set(),
     mainCategory: new Set()
 };
 
@@ -134,8 +133,6 @@ async function init() {
         let numValid = 0;
         
         allBeers.forEach(b => {
-            // Sett award_text for filter
-            b.award_text = b.has_community_award ? 'Ja' : 'Nei';
 
             if (b.match_confidence && b.match_confidence > 50 && b.rating_score > 0 && b.rating_count > 0) {
                 sumRating += b.rating_score;
@@ -167,7 +164,6 @@ async function init() {
         setupDropdown('dropdownBrewery', 'unt_brewery', 'brewery');
         setupDropdown('dropdownMainCategory', 'vmp_main_category', 'mainCategory');
         setupDropdown('dropdownUntStyle', 'unt_style', 'untStyle');
-        setupDropdown('dropdownAward', 'award_text', 'award');
         
         renderTable();
     } catch (error) {
@@ -542,7 +538,6 @@ function getFilteredAndSortedData() {
         if (activeFilters.untStyle.size > 0 && !activeFilters.untStyle.has(beer.unt_style)) return false;
         if (activeFilters.brewery.size > 0 && !activeFilters.brewery.has(beer.unt_brewery)) return false;
         if (activeFilters.mainCategory.size > 0 && !activeFilters.mainCategory.has(beer.vmp_main_category)) return false;
-        if (activeFilters.award.size > 0 && !activeFilters.award.has(beer.award_text)) return false;
         
         if (hideDiscontinued && beer.is_discontinued) return false;
         
@@ -647,8 +642,7 @@ function renderFilterChips() {
         style: { label: 'Stil', element: 'dropdownStyle', defaultText: 'Stil' },
         untStyle: { label: 'Understil', element: 'dropdownUntStyle', defaultText: 'Understil' },
         country: { label: 'Land', element: 'dropdownCountry', defaultText: 'Land' },
-        brewery: { label: 'Bryggeri', element: 'dropdownBrewery', defaultText: 'Bryggeri' },
-        award: { label: 'Toppliste', element: 'dropdownAward', defaultText: 'Toppliste' }
+        brewery: { label: 'Bryggeri', element: 'dropdownBrewery', defaultText: 'Bryggeri' }
     };
 
     for (const key in dropdownMappings) {

@@ -1,10 +1,10 @@
 """
-sync_products.py – Iterer over vmp_all_products og oppdater alle som:
+sync_products.py - Iterer over vmp_all_products og oppdater alle som:
   1. needs_sync = 1
   2. Er øl (is_beer = 1 ELLER is_beer IS NULL) og mangler category_id i vmp_products
 
 Bruker scrape_vmp_product() fra vmp_scraper.py.
-Respekterer VMP-rate-limit (~60 kall/min → 1.2s delay).
+Respekterer VMP-rate-limitOpprydning av Modal og nye standardkolonner
 """
 
 import sqlite3
@@ -26,7 +26,7 @@ def get_pending_ids(db_path: str) -> list[tuple[int, str]]:
     Returnerer liste av (product_id_vmp, årsak) for alle produkter som trenger skraping.
     Årsak er enten 'needs_sync' eller 'no_category'.
     """
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=60)
     cur = conn.cursor()
 
     # 1. Alle med needs_sync = 1

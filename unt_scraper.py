@@ -187,7 +187,7 @@ def match_vmp_to_untappd(vmp_id: int | str, db_path: str = DB_PATH, dry_run: boo
     Tar inn et vmp_id, slår det opp i lokal database, søker på Untappd,
     og returnerer beste match med en confidence-score.
     """
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=60)
     cur = conn.cursor()
     cur.execute('''
         SELECT p.name, pr.name as brewery, p.abv, p.vintage, pr.id as producer_id, ub.brewery_name, pr.unt_brewery_id
@@ -326,7 +326,7 @@ def match_vmp_to_untappd(vmp_id: int | str, db_path: str = DB_PATH, dry_run: boo
         return {"match": best_match, "confidence": best_score}
         
     # Lagre i databasen uansett resultat
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=60)
     cur = conn.cursor()
     
     if best_match:

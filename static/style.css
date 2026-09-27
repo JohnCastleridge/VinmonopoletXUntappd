@@ -101,9 +101,20 @@ body {
     align-items: center;
     gap: 0.5rem;
     font-size: 0.9rem;
-    cursor: pointer;
+    cursor: grab;
+    padding: 4px 0;
     color: #cbd5e1;
-    transition: color 0.2s;
+    transition: color 0.2s, opacity 0.2s, border-top 0.2s;
+}
+.checkbox-label:active {
+    cursor: grabbing;
+}
+.checkbox-label.dragging {
+    opacity: 0.5;
+}
+.checkbox-label.drag-over {
+    border-top: 2px solid var(--accent);
+    padding-top: 2px;
 }
 
 .checkbox-label:hover {
